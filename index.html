@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Clock</title>
+    <title id="pageTitle">00:00:00</title>
     <style>
         * {
             margin: 0;
@@ -62,6 +62,7 @@
         .clock-display {
             text-align: center;
             z-index: 10;
+            cursor: text;
         }
 
         .time {
@@ -73,6 +74,27 @@
             margin: 0;
             font-variant-numeric: tabular-nums;
             text-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            min-height: 1.2em;
+        }
+
+        .time.editable {
+            background: rgba(0, 0, 0, 0.1);
+            padding: 10px 20px;
+            border-radius: 12px;
+            border: 2px solid rgba(0, 0, 0, 0.2);
+            transition: all 0.2s ease;
+        }
+
+        .time.editable:hover {
+            background: rgba(0, 0, 0, 0.15);
+            border-color: var(--accent-color);
+        }
+
+        .time.editable:focus {
+            outline: none;
+            background: rgba(0, 0, 0, 0.2);
+            border-color: var(--accent-color);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
         }
 
         .date {
@@ -83,6 +105,10 @@
             font-weight: 400;
             opacity: 0.7;
             text-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .date.hidden {
+            display: none;
         }
 
         /* Timer/Stopwatch Controls Below Clock */
@@ -113,6 +139,8 @@
             padding: 12px;
             border-radius: 12px;
             border: 1px solid rgba(255, 255, 255, 0.2);
+            flex-wrap: wrap;
+            justify-content: center;
         }
 
         .timer-preset-btn {
@@ -142,7 +170,8 @@
             font-size: 13px;
             font-family: inherit;
             font-weight: 500;
-            min-width: 100px;
+            min-width: 120px;
+            text-align: center;
         }
 
         .timer-input-field::placeholder {
@@ -152,45 +181,8 @@
         .timer-input-field:focus {
             outline: none;
             border-color: var(--accent-color);
-            background: rgba(255, 255, 255, 0.15);
-        }
-
-        .time-controls-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 50px);
-            gap: 6px;
-            background: rgba(0, 0, 0, 0.3);
-            backdrop-filter: blur(10px);
-            padding: 8px;
-            border-radius: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .time-btn {
-            width: 50px;
-            height: 40px;
-            border-radius: 8px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            background: rgba(255, 255, 255, 0.1);
-            color: var(--text-color);
-            font-size: 11px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            font-family: inherit;
-            font-weight: 500;
-        }
-
-        .time-btn:hover {
             background: rgba(255, 255, 255, 0.2);
-        }
-
-        .time-btn.subtract {
-            background: rgba(255, 59, 48, 0.2);
-            border-color: rgba(255, 59, 48, 0.4);
-        }
-
-        .time-btn.subtract:hover {
-            background: rgba(255, 59, 48, 0.3);
+            box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
         }
 
         .stopwatch-controls-row {
@@ -594,14 +586,6 @@
             .settings-group {
                 grid-template-columns: 1fr;
             }
-
-            .time-controls-grid {
-                grid-template-columns: repeat(3, 50px);
-            }
-
-            .timer-input-container {
-                flex-wrap: wrap;
-            }
         }
 
         /* Themes */
@@ -837,6 +821,7 @@
         const timeDisplay = document.getElementById('time');
         const dateDisplay = document.getElementById('date');
         const clockDisplay = document.getElementById('clockDisplay');
+        const pageTitle = document.getElementById('pageTitle');
         const settingsBtn = document.getElementById('settingsBtn');
         const settingsPanel = document.getElementById('settingsPanel');
         const closeSettings = document.getElementById('closeSettings');
@@ -879,7 +864,7 @@
             renderFonts();
             setupEventListeners();
             updateClock();
-            setInterval(updateClock, 100);
+            setInterval(updateClock, 50);
             applySettings();
         }
 
@@ -1088,10 +1073,16 @@
                     const seconds = parseInt(btn.dataset.preset);
                     state.timerTime += seconds;
                     updateTimerDisplay();
+                    showControls();
                 });
             });
 
-            // Timer custom input
+            // Timer custom input - select all on focus
+            timerCustomInput.addEventListener('focus', () => {
+                timerCustomInput.select();
+                showControls();
+            });
+
             timerCustomInput.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') {
                     const input = e.target.value.trim();
@@ -1129,6 +1120,14 @@
         }
 
         function switchMode(mode) {
+            // Stop any running timers before switching
+            if (state.timerRunning) {
+                pauseTimer();
+            }
+            if (state.stopwatchRunning) {
+                pauseStopwatch();
+            }
+
             state.mode = mode;
             
             document.querySelectorAll('.mode-btn').forEach(btn => {
@@ -1137,11 +1136,19 @@
 
             timerControls.classList.remove('visible');
             stopwatchControls.classList.remove('visible');
+            dateDisplay.classList.remove('hidden');
 
             if (mode === 'timer') {
+                timeDisplay.classList.add('editable');
                 timerControls.classList.add('visible');
+                dateDisplay.classList.add('hidden');
             } else if (mode === 'stopwatch') {
+                timeDisplay.classList.add('editable');
                 stopwatchControls.classList.add('visible');
+                dateDisplay.classList.add('hidden');
+            } else {
+                timeDisplay.classList.remove('editable');
+                dateDisplay.classList.toggle('hidden', !state.showDate);
             }
 
             saveSettings();
@@ -1184,7 +1191,7 @@
                 stopwatchInterval = setInterval(() => {
                     state.stopwatchTime++;
                     updateStopwatchDisplay();
-                }, 100);
+                }, 10);
             }
         }
 
@@ -1212,17 +1219,22 @@
                 : `${minutes}:${String(seconds).padStart(2, '0')}`;
 
             timeDisplay.textContent = display;
+            pageTitle.textContent = display;
         }
 
         function updateStopwatchDisplay() {
-            const seconds = Math.floor(state.stopwatchTime / 10);
-            const hours = Math.floor(seconds / 3600);
-            const minutes = Math.floor((seconds % 3600) / 60);
-            const secs = seconds % 60;
-            const millis = state.stopwatchTime % 10;
+            const centiseconds = state.stopwatchTime;
+            const seconds = Math.floor(centiseconds / 100);
+            const minutes = Math.floor(seconds / 60);
+            const hours = Math.floor(minutes / 60);
+            
+            const displaySeconds = seconds % 60;
+            const displayMinutes = minutes % 60;
+            const displayCentis = centiseconds % 100;
 
-            const display = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}.${millis}`;
+            const display = `${String(hours).padStart(2, '0')}:${String(displayMinutes).padStart(2, '0')}:${String(displaySeconds).padStart(2, '0')}.${String(displayCentis).padStart(2, '0')}`;
             timeDisplay.textContent = display;
+            pageTitle.textContent = display;
         }
 
         function playAlarmSound() {
@@ -1317,6 +1329,7 @@
                 }
                 
                 timeDisplay.textContent = displayTime;
+                pageTitle.textContent = displayTime;
                 
                 if (state.showDate) {
                     const formatter = new Intl.DateTimeFormat('en-US', {
@@ -1336,6 +1349,7 @@
 
         function showControls() {
             controls.classList.add('visible');
+            modeControls.classList.add('visible');
             resetInactivityTimer();
         }
 
@@ -1345,10 +1359,12 @@
             }
             
             state.inactivityTimer = setTimeout(() => {
-                controls.classList.remove('visible');
-                modeControls.classList.remove('visible');
-                timerControls.classList.remove('visible');
-                stopwatchControls.classList.remove('visible');
+                if (!settingsPanel.classList.contains('open')) {
+                    controls.classList.remove('visible');
+                    modeControls.classList.remove('visible');
+                    timerControls.classList.remove('visible');
+                    stopwatchControls.classList.remove('visible');
+                }
             }, 5000);
         }
 
