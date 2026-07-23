@@ -3,448 +3,1171 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Clock</title>
 
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter&family=Orbitron&family=Playfair+Display&family=Roboto+Mono&family=Space+Mono&family=Poppins&family=Montserrat&family=Raleway&family=Courier+Prime&family=Lora&display=swap');
 
-:root {
-    --bg1:#0f172a;
-    --bg2:#1e293b;
-    --text:white;
-    --accent:#ffffff;
+:root{
+    --background:#0f172a;
+    --background2:#1e293b;
+    --text:#ffffff;
+    --glass:rgba(255,255,255,.12);
 }
 
-* {
+
+*{
     box-sizing:border-box;
 }
 
-body {
+
+body{
     margin:0;
     height:100vh;
     overflow:hidden;
     display:flex;
     justify-content:center;
     align-items:center;
-    font-family:Inter, sans-serif;
-    color:var(--text);
-    background:linear-gradient(135deg,var(--bg1),var(--bg2));
-    transition:background 1s;
-}
 
-body::before {
-    content:"";
-    position:absolute;
-    inset:-50%;
     background:
-    radial-gradient(circle,#ffffff22,transparent 40%);
-    animation:move 15s infinite alternate;
+    linear-gradient(
+        135deg,
+        var(--background),
+        var(--background2)
+    );
+
+    color:var(--text);
+    font-family:Inter,sans-serif;
+
+    transition:
+        background 1s,
+        color 1s;
 }
 
-@keyframes move {
-    from {transform:translate(-10%,-10%)}
-    to {transform:translate(10%,10%)}
-}
 
-.clock-container {
+.container{
     text-align:center;
-    z-index:2;
+    transition:opacity 1.2s, transform 1.2s;
 }
 
-#clock {
-    font-size:clamp(70px,13vw,180px);
-    font-weight:700;
+
+.clock{
+    font-size:clamp(70px,14vw,190px);
+    font-weight:600;
     letter-spacing:-5px;
-    transition:.5s;
+
+    transition:
+    font-family .5s,
+    transform .5s;
 }
 
-#date {
-    margin-top:10px;
+
+.date{
+    margin-top:15px;
     font-size:24px;
-    opacity:.7;
+    opacity:.65;
 }
 
-.hidden {
+
+.hidden{
     display:none;
 }
 
 
-.controls {
+.dim{
+    opacity:.12;
+    transform:scale(.98);
+}
+
+
+/* Top controls */
+
+.controls{
+
     position:fixed;
     top:25px;
     right:25px;
-    z-index:5;
+
     opacity:0;
+
     transition:.5s;
 }
 
-body:hover .controls {
+
+body.active .controls{
     opacity:1;
 }
 
 
-button {
+
+.icon-btn{
+
+    width:52px;
+    height:52px;
+
+    border-radius:50%;
+
     border:none;
-    background:#ffffff18;
-    backdrop-filter:blur(15px);
+
     color:white;
-    padding:12px 18px;
-    border-radius:20px;
+
+    background:var(--glass);
+
+    backdrop-filter:blur(20px);
+
+    font-size:22px;
+
     cursor:pointer;
+
     transition:.3s;
 }
 
-button:hover {
-    transform:translateY(-3px);
-    background:#ffffff33;
+
+.icon-btn:hover{
+    transform:scale(1.08);
 }
 
 
-.panel {
+
+/* Settings */
+
+.panel{
+
     position:fixed;
-    right:-380px;
+
+    right:-420px;
+
     top:0;
-    width:350px;
+
+    width:380px;
+
     height:100%;
-    padding:30px;
-    background:#00000055;
-    backdrop-filter:blur(25px);
+
+    padding:35px;
+
+    background:
+    rgba(0,0,0,.35);
+
+    backdrop-filter:blur(30px);
+
     transition:.5s;
-    z-index:10;
+
     overflow:auto;
+
 }
 
-.panel.open {
+
+.panel.open{
     right:0;
 }
 
 
-h2 {
-    margin-top:0;
+
+.card{
+
+    background:
+    rgba(255,255,255,.08);
+
+    border-radius:18px;
+
+    padding:18px;
+
+    margin-bottom:15px;
+
 }
 
-.option {
-    margin:20px 0;
-}
-
-select,input {
-    width:100%;
-    padding:10px;
-    border-radius:12px;
-    border:none;
-}
 
 
-.mode {
-    position:fixed;
-    bottom:30px;
-    left:50%;
-    transform:translateX(-50%);
+label{
     display:flex;
-    gap:10px;
-    opacity:.8;
+    justify-content:space-between;
+    align-items:center;
 }
 
 
-.timer {
+
+select,
+input{
+
+    margin-top:10px;
+
+    width:100%;
+
+    padding:12px;
+
+    border-radius:14px;
+
+    border:none;
+
+}
+
+
+
+/* Bottom mode buttons */
+
+.modes{
+
+    position:fixed;
+
+    bottom:35px;
+
+    display:flex;
+
+    gap:12px;
+
+}
+
+
+
+.mode-btn{
+
+    border:none;
+
+    padding:12px 22px;
+
+    border-radius:30px;
+
+    background:var(--glass);
+
+    color:white;
+
+    backdrop-filter:blur(20px);
+
+    cursor:pointer;
+
+    transition:.3s;
+
+}
+
+
+.mode-btn:hover{
+
+    transform:translateY(-3px);
+
+}
+
+
+
+.extra{
+
+    font-size:40px;
+
     margin-top:20px;
-    font-size:35px;
-}
 
-.fade {
-    opacity:.25;
 }
 
 </style>
 </head>
-
 <body>
 
 <div class="controls">
-<button onclick="openSettings()">⚙</button>
+    <button class="icon-btn" onclick="openSettings()">⚙</button>
 </div>
 
 
-<div class="clock-container">
+<div class="container" id="main">
 
-<div id="clock">
-00:00:00
-</div>
+    <div class="clock" id="clock">
+        12:00:00
+    </div>
 
-<div id="date" class="hidden"></div>
+    <div class="date hidden" id="date">
+        Monday, January 1
+    </div>
 
-<div id="extra" class="timer"></div>
+    <div class="extra" id="extra"></div>
 
-</div>
-
-
-<div class="mode">
-<button onclick="setMode('clock')">Clock</button>
-<button onclick="setMode('timer')">Timer</button>
-<button onclick="setMode('stopwatch')">Stopwatch</button>
 </div>
 
 
+
+<!-- Modes -->
+
+<div class="modes">
+
+    <button class="mode-btn" onclick="changeMode('clock')">
+        Clock
+    </button>
+
+    <button class="mode-btn" onclick="changeMode('timer')">
+        Timer
+    </button>
+
+    <button class="mode-btn" onclick="changeMode('stopwatch')">
+        Stopwatch
+    </button>
+
+</div>
+
+
+
+
+
+<!-- Settings Panel -->
 
 <div class="panel" id="panel">
 
 <h2>Settings</h2>
 
-<div class="option">
-Appearance
+
+
+<div class="card">
+
+<h3>Appearance</h3>
+
+
+<label>
+Theme
+
 <select id="theme">
-<option value="default">Midnight</option>
-<option value="ocean">Ocean</option>
-<option value="sunset">Sunset</option>
-<option value="forest">Forest</option>
-<option value="purple">Purple</option>
-<option value="white">Clean</option>
-<option value="rose">Rose</option>
-<option value="blue">Blue</option>
-<option value="gold">Gold</option>
-<option value="dark">Dark</option>
+
+<option value="midnight">
+Midnight
+</option>
+
+<option value="ocean">
+Ocean
+</option>
+
+<option value="sunset">
+Sunset
+</option>
+
+<option value="forest">
+Forest
+</option>
+
+<option value="purple">
+Purple
+</option>
+
+<option value="clean">
+Clean
+</option>
+
+<option value="rose">
+Rose
+</option>
+
+<option value="blue">
+Blue
+</option>
+
+<option value="gold">
+Gold
+</option>
+
+<option value="dark">
+Dark
+</option>
+
 </select>
+
+</label>
+
 </div>
 
 
-<div class="option">
-Font
+
+
+
+<div class="card">
+
+<h3>Font</h3>
+
+
 <select id="font">
-<option>Inter</option>
-<option>Orbitron</option>
-<option>Playfair Display</option>
-<option>Roboto Mono</option>
-<option>Space Mono</option>
-<option>Poppins</option>
-<option>Montserrat</option>
-<option>Raleway</option>
-<option>Courier Prime</option>
-<option>Lora</option>
+
+<option>
+Inter
+</option>
+
+<option>
+Orbitron
+</option>
+
+<option>
+Playfair Display
+</option>
+
+<option>
+Roboto Mono
+</option>
+
+<option>
+Space Mono
+</option>
+
+<option>
+Poppins
+</option>
+
+<option>
+Montserrat
+</option>
+
+<option>
+Raleway
+</option>
+
+<option>
+Courier Prime
+</option>
+
+<option>
+Lora
+</option>
+
+
 </select>
+
+
 </div>
 
 
-<div class="option">
-Time Format
+
+
+
+<div class="card">
+
+<h3>Time</h3>
+
+
+<label>
+
+12 / 24 Hour
+
 <select id="format">
-<option value="12">12 Hour</option>
-<option value="24">24 Hour</option>
+
+<option value="12">
+12 Hour
+</option>
+
+<option value="24">
+24 Hour
+</option>
+
 </select>
-</div>
+
+</label>
 
 
-<div class="option">
+
 <label>
-<input type="checkbox" id="showDate">
+
+Seconds
+
+<input 
+type="checkbox"
+id="seconds"
+checked>
+
+</label>
+
+
+
+<label>
+
 Show Date
+
+<input 
+type="checkbox"
+id="showDate">
+
 </label>
+
+
+
 </div>
 
 
-<div class="option">
-<label>
-<input type="checkbox" id="seconds" checked>
-Show Seconds
-</label>
-</div>
 
 
-<div class="option">
-Timezone
+
+
+<div class="card">
+
+<h3>Timezone</h3>
+
+
 <select id="timezone">
-<option value="local">Local</option>
-<option value="America/New_York">New York</option>
-<option value="Europe/London">London</option>
-<option value="Asia/Tokyo">Tokyo</option>
-<option value="Australia/Sydney">Sydney</option>
+
+<option value="local">
+Local Time
+</option>
+
+
+<option value="America/New_York">
+New York
+</option>
+
+
+<option value="Europe/London">
+London
+</option>
+
+
+<option value="Europe/Paris">
+Paris
+</option>
+
+
+<option value="Asia/Tokyo">
+Tokyo
+</option>
+
+
+<option value="Asia/Shanghai">
+Shanghai
+</option>
+
+
+<option value="Australia/Sydney">
+Sydney
+</option>
+
+
 </select>
+
+
 </div>
 
 
-<button onclick="closeSettings()">Done</button>
+
+
+
+
+
+<div class="card">
+
+<h3>Timer</h3>
+
+
+<input 
+type="number"
+id="timerMinutes"
+placeholder="Minutes">
+
+
+<button 
+class="mode-btn"
+onclick="startTimer()">
+
+Start Timer
+
+</button>
+
 
 </div>
+
+
+
+
+
+
+<div class="card">
+
+<h3>Controls</h3>
+
+
+<button 
+class="mode-btn"
+onclick="closeSettings()">
+
+Close
+
+</button>
+
+
+</div>
+
+
+</div>
+
+
+
 
 
 <script>
+const clock = document.getElementById("clock");
+const date = document.getElementById("date");
+const panel = document.getElementById("panel");
+const main = document.getElementById("main");
+const extra = document.getElementById("extra");
 
-let settings={
-format:"12",
-seconds:true,
-date:false,
-timezone:"local",
-font:"Inter",
-theme:"default"
+
+let mode = "clock";
+
+let settings = JSON.parse(localStorage.getItem("clockSettings")) || {
+
+    theme:"midnight",
+    font:"Inter",
+    format:"12",
+    seconds:true,
+    showDate:false,
+    timezone:"local"
+
 };
 
 
-let mode="clock";
 
-let timerSeconds=0;
-let stopwatch=0;
-let running=false;
+let timer = 0;
+let stopwatch = 0;
+let running = false;
+
+let idleTimer;
 
 
-const clock=document.getElementById("clock");
-const date=document.getElementById("date");
-const panel=document.getElementById("panel");
+
+// --------------------
+// Settings
+// --------------------
+
+
+function save(){
+
+    localStorage.setItem(
+        "clockSettings",
+        JSON.stringify(settings)
+    );
+
+}
+
 
 
 function openSettings(){
-panel.classList.add("open");
+
+    panel.classList.add("open");
+
 }
 
+
+
 function closeSettings(){
-panel.classList.remove("open");
+
+    panel.classList.remove("open");
+
 }
+
+
+
+// --------------------
+// Activity Fade
+// --------------------
+
+
+function wake(){
+
+    document.body.classList.add("active");
+
+    main.classList.remove("dim");
+
+
+    clearTimeout(idleTimer);
+
+
+    idleTimer=setTimeout(()=>{
+
+        main.classList.add("dim");
+
+        document.body.classList.remove("active");
+
+    },5000);
+
+}
+
+
+document.addEventListener(
+"mousemove",
+wake
+);
+
+
+document.addEventListener(
+"keydown",
+wake
+);
+
+
+
+wake();
+
+
+
+
+// --------------------
+// Clock
+// --------------------
 
 
 function updateClock(){
 
-let now=new Date();
+
+if(mode!=="clock") return;
+
+
+let now = new Date();
+
+
 
 let options={};
 
-if(settings.timezone!="local"){
-options.timeZone=settings.timezone;
+
+
+if(settings.timezone!=="local"){
+
+    options.timeZone=settings.timezone;
+
 }
 
-let h=new Intl.DateTimeFormat("en-US",{hour:"numeric",hour12:false,...options}).format(now);
-
-let m=new Intl.DateTimeFormat("en-US",{minute:"2-digit",...options}).format(now);
-
-let s=new Intl.DateTimeFormat("en-US",{second:"2-digit",...options}).format(now);
 
 
-if(settings.format=="12"){
 
-let parts=new Intl.DateTimeFormat("en-US",{
+if(settings.format==="12"){
+
+
+clock.innerHTML =
+new Intl.DateTimeFormat(
+"en-US",
+{
 hour:"numeric",
 minute:"2-digit",
-second:"2-digit",
+second:
+settings.seconds
+?
+"2-digit"
+:
+undefined,
 hour12:true,
 ...options
-}).formatToParts(now);
-
-clock.innerHTML=parts.map(x=>x.value).join("");
-
 }
-else{
-
-clock.innerHTML=
-h.padStart(2,"0")+":"+m+(settings.seconds?":"+s:"");
-
-}
+)
+.format(now);
 
 
-if(settings.date){
-
-date.classList.remove("hidden");
-date.innerHTML=new Intl.DateTimeFormat("en-US",{
-weekday:"long",
-month:"long",
-day:"numeric"
-}).format(now);
 
 }else{
-date.classList.add("hidden");
+
+
+let parts =
+new Intl.DateTimeFormat(
+"en-US",
+{
+hour:"2-digit",
+minute:"2-digit",
+second:
+settings.seconds
+?
+"2-digit"
+:
+undefined,
+hour12:false,
+...options
 }
+)
+.format(now);
+
+
+
+clock.innerHTML=parts;
+
+
+
+}
+
+
+
+if(settings.showDate){
+
+
+date.classList.remove("hidden");
+
+
+date.innerHTML =
+new Intl.DateTimeFormat(
+"en-US",
+{
+weekday:"long",
+month:"long",
+day:"numeric",
+...options
+}
+)
+.format(now);
+
+
+
+}else{
+
+
+date.classList.add("hidden");
+
+
+}
+
 
 
 document.title=clock.innerText;
 
 
+
+}
+
+
+
+
+
+// --------------------
+// Timer
+// --------------------
+
+
+function startTimer(){
+
+
+let mins =
+Number(
+document.getElementById("timerMinutes").value
+);
+
+
+
+if(mins){
+
+timer = mins*60;
+
+mode="timer";
+
 }
 
 
 
-function setMode(x){
-
-mode=x;
-document.getElementById("extra").innerHTML="";
-
-if(x=="timer"){
-timerSeconds=300;
 }
 
-if(x=="stopwatch"){
-stopwatch=0;
-}
+
+
+function updateTimer(){
+
+
+if(mode!=="timer") return;
+
+
+if(timer>0 && running){
+
+timer--;
 
 }
+
+
+
+let m=Math.floor(timer/60);
+
+let s=timer%60;
+
+
+
+extra.innerHTML =
+`${m}:${String(s).padStart(2,"0")}`;
+
+
+
+document.title =
+`Timer ${extra.innerText}`;
+
+
+
+}
+
+
+
+
+
+// --------------------
+// Stopwatch
+// --------------------
+
+
+function updateStopwatch(){
+
+
+if(mode!=="stopwatch") return;
+
+
+if(running){
+
+stopwatch++;
+
+}
+
+
+
+let m=Math.floor(stopwatch/60);
+
+let s=stopwatch%60;
+
+
+extra.innerHTML =
+`${m}:${String(s).padStart(2,"0")}`;
+
+
+document.title =
+`Stopwatch ${extra.innerText}`;
+
+
+
+}
+
+
+
+
+
+function changeMode(newMode){
+
+
+mode=newMode;
+
+
+extra.innerHTML="";
+
+
+if(mode==="clock"){
+
+updateClock();
+
+}
+
+
+}
+
+
+
+
+
+// --------------------
+// Controls
+// --------------------
+
+
+theme.onchange=function(){
+
+settings.theme=this.value;
+
+applyTheme();
+
+save();
+
+};
+
+
+
+font.onchange=function(){
+
+settings.font=this.value;
+
+document.body.style.fontFamily=
+this.value;
+
+
+save();
+
+
+};
+
+
+
+format.onchange=function(){
+
+settings.format=this.value;
+
+save();
+
+
+};
+
+
+
+seconds.onchange=function(){
+
+settings.seconds=this.checked;
+
+save();
+
+
+};
+
+
+
+showDate.onchange=function(){
+
+settings.showDate=this.checked;
+
+save();
+
+
+};
+
+
+
+timezone.onchange=function(){
+
+settings.timezone=this.value;
+
+save();
+
+
+};
+
+
+
+
+
+// --------------------
+// Themes
+// --------------------
+
+
+function applyTheme(){
+
+
+let themes={
+
+
+midnight:[
+"#0f172a",
+"#1e293b"
+],
+
+
+ocean:[
+"#0f2027",
+"#203a43"
+],
+
+
+sunset:[
+"#ff512f",
+"#dd2476"
+],
+
+
+forest:[
+"#134e5e",
+"#71b280"
+],
+
+
+purple:[
+"#41295a",
+"#2f0743"
+],
+
+
+clean:[
+"#eeeeee",
+"#999999"
+],
+
+
+rose:[
+"#ff758c",
+"#ff7eb3"
+],
+
+
+blue:[
+"#2980b9",
+"#6dd5fa"
+],
+
+
+gold:[
+"#614385",
+"#516395"
+],
+
+
+dark:[
+"#000000",
+"#111111"
+]
+
+
+};
+
+
+
+let t =
+themes[settings.theme];
+
+
+document.body.style.background =
+`linear-gradient(135deg,${t[0]},${t[1]})`;
+
+}
+
+
+
+
+// --------------------
+// Restore Settings
+// --------------------
+
+
+function load(){
+
+
+theme.value=settings.theme;
+
+font.value=settings.font;
+
+format.value=settings.format;
+
+seconds.checked=settings.seconds;
+
+showDate.checked=settings.showDate;
+
+timezone.value=settings.timezone;
+
+
+document.body.style.fontFamily=
+settings.font;
+
+
+applyTheme();
+
+
+}
+
+
+
+
+
+// --------------------
+// Main Loop
+// --------------------
 
 
 setInterval(()=>{
 
-if(mode=="clock"){
 updateClock();
-}
 
+updateTimer();
 
-if(mode=="timer"){
-
-if(timerSeconds>0){
-timerSeconds--;
-}
-
-document.getElementById("extra").innerHTML=
-Math.floor(timerSeconds/60)+":"+String(timerSeconds%60).padStart(2,"0");
-
-}
-
-
-if(mode=="stopwatch"){
-
-if(running) stopwatch++;
-
-document.getElementById("extra").innerHTML=
-Math.floor(stopwatch/60)+":"+String(stopwatch%60).padStart(2,"0");
-
-}
+updateStopwatch();
 
 
 },1000);
 
 
 
-font.onchange=function(){
-document.body.style.fontFamily=this.value;
-};
 
-
-theme.onchange=function(){
-
-let themes={
-default:["#0f172a","#1e293b"],
-ocean:["#0f2027","#203a43"],
-sunset:["#ff512f","#dd2476"],
-forest:["#134e5e","#71b280"],
-purple:["#41295a","#2f0743"],
-white:["#ddd","#777"],
-rose:["#ff758c","#ff7eb3"],
-blue:["#2980b9","#6dd5fa"],
-gold:["#614385","#516395"],
-dark:["#000","#111"]
-};
-
-document.body.style.background=
-`linear-gradient(135deg,${themes[this.value][0]},${themes[this.value][1]})`;
-
-};
-
-
-format.onchange=()=>settings.format=format.value;
-
-seconds.onchange=()=>settings.seconds=seconds.checked;
-
-showDate.onchange=()=>settings.date=showDate.checked;
-
-timezone.onchange=()=>settings.timezone=timezone.value;
-
+load();
 
 updateClock();
 
 </script>
+
 
 </body>
 </html>
