@@ -1,61 +1,449 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clock</title>
 
-  <!-- Inter Font -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400&display=swap" rel="stylesheet">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter&family=Orbitron&family=Playfair+Display&family=Roboto+Mono&family=Space+Mono&family=Poppins&family=Montserrat&family=Raleway&family=Courier+Prime&family=Lora&display=swap');
 
-  <title>Clock</title>
-
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    body {
-      background: #fff;
-      color: #000;
-      font-family: "Inter", sans-serif;
-      width: 100vw;
-      height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      overflow: hidden;
-    }
-
-    #clock {
-      font-size: 20vw;
-      line-height: 1;
-      font-weight: 400;
-      white-space: nowrap;
-      user-select: none;
-    }
-  </style>
-</head>
-<body>
-
-<div id="clock">00:00:00</div>
-
-<script>
-function updateClock() {
-  const now = new Date();
-
-  const h = String(now.getHours()).padStart(2, '0');
-  const m = String(now.getMinutes()).padStart(2, '0');
-  const s = String(now.getSeconds()).padStart(2, '0');
-
-  document.getElementById('clock').textContent = `${h}:${m}:${s}`;
+:root {
+    --bg1:#0f172a;
+    --bg2:#1e293b;
+    --text:white;
+    --accent:#ffffff;
 }
 
+* {
+    box-sizing:border-box;
+}
+
+body {
+    margin:0;
+    height:100vh;
+    overflow:hidden;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-family:Inter, sans-serif;
+    color:var(--text);
+    background:linear-gradient(135deg,var(--bg1),var(--bg2));
+    transition:background 1s;
+}
+
+body::before {
+    content:"";
+    position:absolute;
+    inset:-50%;
+    background:
+    radial-gradient(circle,#ffffff22,transparent 40%);
+    animation:move 15s infinite alternate;
+}
+
+@keyframes move {
+    from {transform:translate(-10%,-10%)}
+    to {transform:translate(10%,10%)}
+}
+
+.clock-container {
+    text-align:center;
+    z-index:2;
+}
+
+#clock {
+    font-size:clamp(70px,13vw,180px);
+    font-weight:700;
+    letter-spacing:-5px;
+    transition:.5s;
+}
+
+#date {
+    margin-top:10px;
+    font-size:24px;
+    opacity:.7;
+}
+
+.hidden {
+    display:none;
+}
+
+
+.controls {
+    position:fixed;
+    top:25px;
+    right:25px;
+    z-index:5;
+    opacity:0;
+    transition:.5s;
+}
+
+body:hover .controls {
+    opacity:1;
+}
+
+
+button {
+    border:none;
+    background:#ffffff18;
+    backdrop-filter:blur(15px);
+    color:white;
+    padding:12px 18px;
+    border-radius:20px;
+    cursor:pointer;
+    transition:.3s;
+}
+
+button:hover {
+    transform:translateY(-3px);
+    background:#ffffff33;
+}
+
+
+.panel {
+    position:fixed;
+    right:-380px;
+    top:0;
+    width:350px;
+    height:100%;
+    padding:30px;
+    background:#00000055;
+    backdrop-filter:blur(25px);
+    transition:.5s;
+    z-index:10;
+    overflow:auto;
+}
+
+.panel.open {
+    right:0;
+}
+
+
+h2 {
+    margin-top:0;
+}
+
+.option {
+    margin:20px 0;
+}
+
+select,input {
+    width:100%;
+    padding:10px;
+    border-radius:12px;
+    border:none;
+}
+
+
+.mode {
+    position:fixed;
+    bottom:30px;
+    left:50%;
+    transform:translateX(-50%);
+    display:flex;
+    gap:10px;
+    opacity:.8;
+}
+
+
+.timer {
+    margin-top:20px;
+    font-size:35px;
+}
+
+.fade {
+    opacity:.25;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="controls">
+<button onclick="openSettings()">⚙</button>
+</div>
+
+
+<div class="clock-container">
+
+<div id="clock">
+00:00:00
+</div>
+
+<div id="date" class="hidden"></div>
+
+<div id="extra" class="timer"></div>
+
+</div>
+
+
+<div class="mode">
+<button onclick="setMode('clock')">Clock</button>
+<button onclick="setMode('timer')">Timer</button>
+<button onclick="setMode('stopwatch')">Stopwatch</button>
+</div>
+
+
+
+<div class="panel" id="panel">
+
+<h2>Settings</h2>
+
+<div class="option">
+Appearance
+<select id="theme">
+<option value="default">Midnight</option>
+<option value="ocean">Ocean</option>
+<option value="sunset">Sunset</option>
+<option value="forest">Forest</option>
+<option value="purple">Purple</option>
+<option value="white">Clean</option>
+<option value="rose">Rose</option>
+<option value="blue">Blue</option>
+<option value="gold">Gold</option>
+<option value="dark">Dark</option>
+</select>
+</div>
+
+
+<div class="option">
+Font
+<select id="font">
+<option>Inter</option>
+<option>Orbitron</option>
+<option>Playfair Display</option>
+<option>Roboto Mono</option>
+<option>Space Mono</option>
+<option>Poppins</option>
+<option>Montserrat</option>
+<option>Raleway</option>
+<option>Courier Prime</option>
+<option>Lora</option>
+</select>
+</div>
+
+
+<div class="option">
+Time Format
+<select id="format">
+<option value="12">12 Hour</option>
+<option value="24">24 Hour</option>
+</select>
+</div>
+
+
+<div class="option">
+<label>
+<input type="checkbox" id="showDate">
+Show Date
+</label>
+</div>
+
+
+<div class="option">
+<label>
+<input type="checkbox" id="seconds" checked>
+Show Seconds
+</label>
+</div>
+
+
+<div class="option">
+Timezone
+<select id="timezone">
+<option value="local">Local</option>
+<option value="America/New_York">New York</option>
+<option value="Europe/London">London</option>
+<option value="Asia/Tokyo">Tokyo</option>
+<option value="Australia/Sydney">Sydney</option>
+</select>
+</div>
+
+
+<button onclick="closeSettings()">Done</button>
+
+</div>
+
+
+<script>
+
+let settings={
+format:"12",
+seconds:true,
+date:false,
+timezone:"local",
+font:"Inter",
+theme:"default"
+};
+
+
+let mode="clock";
+
+let timerSeconds=0;
+let stopwatch=0;
+let running=false;
+
+
+const clock=document.getElementById("clock");
+const date=document.getElementById("date");
+const panel=document.getElementById("panel");
+
+
+function openSettings(){
+panel.classList.add("open");
+}
+
+function closeSettings(){
+panel.classList.remove("open");
+}
+
+
+function updateClock(){
+
+let now=new Date();
+
+let options={};
+
+if(settings.timezone!="local"){
+options.timeZone=settings.timezone;
+}
+
+let h=new Intl.DateTimeFormat("en-US",{hour:"numeric",hour12:false,...options}).format(now);
+
+let m=new Intl.DateTimeFormat("en-US",{minute:"2-digit",...options}).format(now);
+
+let s=new Intl.DateTimeFormat("en-US",{second:"2-digit",...options}).format(now);
+
+
+if(settings.format=="12"){
+
+let parts=new Intl.DateTimeFormat("en-US",{
+hour:"numeric",
+minute:"2-digit",
+second:"2-digit",
+hour12:true,
+...options
+}).formatToParts(now);
+
+clock.innerHTML=parts.map(x=>x.value).join("");
+
+}
+else{
+
+clock.innerHTML=
+h.padStart(2,"0")+":"+m+(settings.seconds?":"+s:"");
+
+}
+
+
+if(settings.date){
+
+date.classList.remove("hidden");
+date.innerHTML=new Intl.DateTimeFormat("en-US",{
+weekday:"long",
+month:"long",
+day:"numeric"
+}).format(now);
+
+}else{
+date.classList.add("hidden");
+}
+
+
+document.title=clock.innerText;
+
+
+}
+
+
+
+function setMode(x){
+
+mode=x;
+document.getElementById("extra").innerHTML="";
+
+if(x=="timer"){
+timerSeconds=300;
+}
+
+if(x=="stopwatch"){
+stopwatch=0;
+}
+
+}
+
+
+setInterval(()=>{
+
+if(mode=="clock"){
 updateClock();
-setInterval(updateClock, 1000);
+}
+
+
+if(mode=="timer"){
+
+if(timerSeconds>0){
+timerSeconds--;
+}
+
+document.getElementById("extra").innerHTML=
+Math.floor(timerSeconds/60)+":"+String(timerSeconds%60).padStart(2,"0");
+
+}
+
+
+if(mode=="stopwatch"){
+
+if(running) stopwatch++;
+
+document.getElementById("extra").innerHTML=
+Math.floor(stopwatch/60)+":"+String(stopwatch%60).padStart(2,"0");
+
+}
+
+
+},1000);
+
+
+
+font.onchange=function(){
+document.body.style.fontFamily=this.value;
+};
+
+
+theme.onchange=function(){
+
+let themes={
+default:["#0f172a","#1e293b"],
+ocean:["#0f2027","#203a43"],
+sunset:["#ff512f","#dd2476"],
+forest:["#134e5e","#71b280"],
+purple:["#41295a","#2f0743"],
+white:["#ddd","#777"],
+rose:["#ff758c","#ff7eb3"],
+blue:["#2980b9","#6dd5fa"],
+gold:["#614385","#516395"],
+dark:["#000","#111"]
+};
+
+document.body.style.background=
+`linear-gradient(135deg,${themes[this.value][0]},${themes[this.value][1]})`;
+
+};
+
+
+format.onchange=()=>settings.format=format.value;
+
+seconds.onchange=()=>settings.seconds=seconds.checked;
+
+showDate.onchange=()=>settings.date=showDate.checked;
+
+timezone.onchange=()=>settings.timezone=timezone.value;
+
+
+updateClock();
+
 </script>
 
 </body>
