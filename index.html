@@ -105,6 +105,56 @@
             pointer-events: all;
         }
 
+        .timer-input-container {
+            display: flex;
+            gap: 8px;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .timer-preset-btn {
+            padding: 10px 16px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-color);
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        .timer-preset-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .timer-input-field {
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-color);
+            font-size: 13px;
+            font-family: inherit;
+            font-weight: 500;
+            min-width: 100px;
+        }
+
+        .timer-input-field::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .timer-input-field:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
         .time-controls-grid {
             display: grid;
             grid-template-columns: repeat(4, 50px);
@@ -548,6 +598,10 @@
             .time-controls-grid {
                 grid-template-columns: repeat(3, 50px);
             }
+
+            .timer-input-container {
+                flex-wrap: wrap;
+            }
         }
 
         /* Themes */
@@ -575,7 +629,7 @@
         .font-lora { font-family: 'Lora', serif; }
     </style>
 
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Orbitron:wght@400;700&family=Roboto+Mono:wght@400;700&family=Space+Mono:wght@400;700&family=Playfair+Display:wght@400;700&family=Poppins:wght@400;600&family=Montserrat:wght@400;600&family=Raleway:wght@400;600&family=Lora:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Orbitron:wght@400;700&family=Roboto+Mono:wght@400;700&family=Space+Mono:wght@400;700&family=Playfair+Display:wght@400;600&family=Poppins:wght@400;600&family=Montserrat:wght@400;600&family=Raleway:wght@400;600&family=Lora:wght@400;600&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="container">
@@ -586,19 +640,11 @@
 
         <!-- Timer Controls -->
         <div class="time-controls" id="timerControls">
-            <div class="time-controls-grid">
-                <button class="time-btn subtract" data-adjust="-3600">-1h</button>
-                <button class="time-btn subtract" data-adjust="-1800">-30m</button>
-                <button class="time-btn subtract" data-adjust="-300">-5m</button>
-                <button class="time-btn subtract" data-adjust="-60">-1m</button>
-                <button class="time-btn" data-adjust="60">+1m</button>
-                <button class="time-btn" data-adjust="300">+5m</button>
-                <button class="time-btn" data-adjust="900">+15m</button>
-                <button class="time-btn" data-adjust="1800">+30m</button>
-                <button class="time-btn" data-adjust="3600">+1h</button>
-                <button class="time-btn subtract" data-adjust="-10">-10s</button>
-                <button class="time-btn subtract" data-adjust="-5">-5s</button>
-                <button class="time-btn" data-adjust="5">+5s</button>
+            <div class="timer-input-container">
+                <button class="timer-preset-btn" data-preset="30">+0:30</button>
+                <button class="timer-preset-btn" data-preset="60">+1:00</button>
+                <button class="timer-preset-btn" data-preset="300">+5:00</button>
+                <input type="text" id="timerCustomInput" class="timer-input-field" placeholder="mm:ss or mm">
             </div>
             <div class="alarm-selector">
                 <select id="alarmSelect">
@@ -607,6 +653,11 @@
                     <option value="chime">🎵 Chime</option>
                     <option value="beep">📍 Beep</option>
                 </select>
+            </div>
+            <div class="stopwatch-controls-row">
+                <button class="stopwatch-btn primary" id="timerStartBtn">Start</button>
+                <button class="stopwatch-btn" id="timerPauseBtn">Pause</button>
+                <button class="stopwatch-btn" id="timerResetBtn">Reset</button>
             </div>
         </div>
 
@@ -637,9 +688,17 @@
             <button class="close-btn" id="closeSettings">&times;</button>
         </div>
 
+        <!-- Preset Themes -->
+        <div class="settings-section">
+            <h3>Preset Themes</h3>
+            <div class="settings-group" id="themeGroup">
+                <!-- Generated by JS -->
+            </div>
+        </div>
+
         <!-- Custom Colors -->
         <div class="settings-section">
-            <h3>Colors</h3>
+            <h3>Custom Colors</h3>
             <div class="color-picker-group">
                 <div class="color-input-row">
                     <label>Background</label>
@@ -657,14 +716,6 @@
                     <label>Accent</label>
                     <input type="color" id="accentColor" value="#000000">
                 </div>
-            </div>
-        </div>
-
-        <!-- Preset Themes -->
-        <div class="settings-section">
-            <h3>Preset Themes</h3>
-            <div class="settings-group" id="themeGroup">
-                <!-- Generated by JS -->
             </div>
         </div>
 
@@ -806,6 +857,21 @@
         const timezoneSelect = document.getElementById('timezoneSelect');
         const alarmSelect = document.getElementById('alarmSelect');
 
+        // Timer elements
+        const timerCustomInput = document.getElementById('timerCustomInput');
+        const timerStartBtn = document.getElementById('timerStartBtn');
+        const timerPauseBtn = document.getElementById('timerPauseBtn');
+        const timerResetBtn = document.getElementById('timerResetBtn');
+        const timerPresetBtns = document.querySelectorAll('.timer-preset-btn');
+
+        // Stopwatch elements
+        const stopwatchStartBtn = document.getElementById('stopwatchStartBtn');
+        const stopwatchPauseBtn = document.getElementById('stopwatchPauseBtn');
+        const stopwatchResetBtn = document.getElementById('stopwatchResetBtn');
+
+        let timerInterval = null;
+        let stopwatchInterval = null;
+
         // Initialize
         function init() {
             loadSettings();
@@ -903,7 +969,6 @@
             
             applyThemeBackground();
             
-            // Update all theme previews to deselect
             document.querySelectorAll('.theme-preview').forEach(el => {
                 el.classList.remove('active');
             });
@@ -1013,40 +1078,66 @@
             // Mode controls
             document.querySelectorAll('.mode-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
-                    selectMode(btn.dataset.mode);
-                    showControls();
+                    switchMode(btn.dataset.mode);
                 });
             });
 
-            // Timer adjustments
-            document.querySelectorAll('[data-adjust]').forEach(btn => {
+            // Timer preset buttons
+            timerPresetBtns.forEach(btn => {
                 btn.addEventListener('click', () => {
-                    const adjust = parseInt(btn.dataset.adjust);
-                    state.timerTime = Math.max(0, state.timerTime + adjust);
-                    updateClock();
+                    const seconds = parseInt(btn.dataset.preset);
+                    state.timerTime += seconds;
+                    updateTimerDisplay();
                 });
             });
 
-            // Stopwatch
-            document.getElementById('stopwatchStartBtn').addEventListener('click', startStopwatch);
-            document.getElementById('stopwatchPauseBtn').addEventListener('click', pauseStopwatch);
-            document.getElementById('stopwatchResetBtn').addEventListener('click', resetStopwatch);
+            // Timer custom input
+            timerCustomInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    const input = e.target.value.trim();
+                    const seconds = parseTimerInput(input);
+                    if (seconds > 0) {
+                        state.timerTime = seconds;
+                        updateTimerDisplay();
+                        timerCustomInput.value = '';
+                    }
+                }
+            });
 
-            // Mouse activity
-            document.addEventListener('mousemove', showControls);
+            // Timer buttons
+            timerStartBtn.addEventListener('click', startTimer);
+            timerPauseBtn.addEventListener('click', pauseTimer);
+            timerResetBtn.addEventListener('click', resetTimer);
+
+            // Stopwatch buttons
+            stopwatchStartBtn.addEventListener('click', startStopwatch);
+            stopwatchPauseBtn.addEventListener('click', pauseStopwatch);
+            stopwatchResetBtn.addEventListener('click', resetStopwatch);
         }
 
-        function selectMode(mode) {
+        function parseTimerInput(input) {
+            const parts = input.split(':');
+            let seconds = 0;
+            
+            if (parts.length === 1) {
+                seconds = parseInt(parts[0]) * 60;
+            } else if (parts.length === 2) {
+                seconds = parseInt(parts[0]) * 60 + parseInt(parts[1]);
+            }
+            
+            return isNaN(seconds) ? 0 : seconds;
+        }
+
+        function switchMode(mode) {
             state.mode = mode;
             
             document.querySelectorAll('.mode-btn').forEach(btn => {
                 btn.classList.toggle('active', btn.dataset.mode === mode);
             });
 
-            // Show/hide mode controls
             timerControls.classList.remove('visible');
             stopwatchControls.classList.remove('visible');
-            
+
             if (mode === 'timer') {
                 timerControls.classList.add('visible');
             } else if (mode === 'stopwatch') {
@@ -1056,14 +1147,208 @@
             saveSettings();
         }
 
+        function startTimer() {
+            if (state.timerTime > 0 && !state.timerRunning) {
+                state.timerRunning = true;
+                timerInterval = setInterval(() => {
+                    state.timerTime--;
+                    updateTimerDisplay();
+
+                    if (state.timerTime <= 0) {
+                        clearInterval(timerInterval);
+                        state.timerRunning = false;
+                        playAlarmSound();
+                    }
+                }, 1000);
+            }
+        }
+
+        function pauseTimer() {
+            if (state.timerRunning) {
+                state.timerRunning = false;
+                clearInterval(timerInterval);
+            }
+        }
+
+        function resetTimer() {
+            state.timerRunning = false;
+            state.timerTime = 0;
+            clearInterval(timerInterval);
+            updateTimerDisplay();
+            timerCustomInput.value = '';
+        }
+
+        function startStopwatch() {
+            if (!state.stopwatchRunning) {
+                state.stopwatchRunning = true;
+                stopwatchInterval = setInterval(() => {
+                    state.stopwatchTime++;
+                    updateStopwatchDisplay();
+                }, 100);
+            }
+        }
+
+        function pauseStopwatch() {
+            if (state.stopwatchRunning) {
+                state.stopwatchRunning = false;
+                clearInterval(stopwatchInterval);
+            }
+        }
+
+        function resetStopwatch() {
+            state.stopwatchRunning = false;
+            state.stopwatchTime = 0;
+            clearInterval(stopwatchInterval);
+            updateStopwatchDisplay();
+        }
+
+        function updateTimerDisplay() {
+            const hours = Math.floor(state.timerTime / 3600);
+            const minutes = Math.floor((state.timerTime % 3600) / 60);
+            const seconds = state.timerTime % 60;
+
+            const display = hours > 0
+                ? `${hours}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
+                : `${minutes}:${String(seconds).padStart(2, '0')}`;
+
+            timeDisplay.textContent = display;
+        }
+
+        function updateStopwatchDisplay() {
+            const seconds = Math.floor(state.stopwatchTime / 10);
+            const hours = Math.floor(seconds / 3600);
+            const minutes = Math.floor((seconds % 3600) / 60);
+            const secs = seconds % 60;
+            const millis = state.stopwatchTime % 10;
+
+            const display = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}.${millis}`;
+            timeDisplay.textContent = display;
+        }
+
+        function playAlarmSound() {
+            if (state.alarmSound === 'none') return;
+
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+            if (state.alarmSound === 'bell') {
+                playBellSound(audioContext);
+            } else if (state.alarmSound === 'chime') {
+                playChimeSound(audioContext);
+            } else if (state.alarmSound === 'beep') {
+                playBeepSound(audioContext);
+            }
+        }
+
+        function playBellSound(ctx) {
+            const now = ctx.currentTime;
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            
+            osc.frequency.value = 800;
+            gain.gain.setValueAtTime(0.3, now);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+            
+            osc.start(now);
+            osc.stop(now + 0.5);
+        }
+
+        function playChimeSound(ctx) {
+            const now = ctx.currentTime;
+            const notes = [523.25, 659.25, 783.99];
+            
+            notes.forEach((freq, i) => {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                
+                osc.frequency.value = freq;
+                gain.gain.setValueAtTime(0.2, now + i * 0.1);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.1 + 0.3);
+                
+                osc.start(now + i * 0.1);
+                osc.stop(now + i * 0.1 + 0.3);
+            });
+        }
+
+        function playBeepSound(ctx) {
+            for (let i = 0; i < 3; i++) {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                
+                osc.frequency.value = 1000;
+                gain.gain.setValueAtTime(0.2, ctx.currentTime + i * 0.2);
+                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + i * 0.2 + 0.1);
+                
+                osc.start(ctx.currentTime + i * 0.2);
+                osc.stop(ctx.currentTime + i * 0.2 + 0.1);
+            }
+        }
+
+        function updateClock() {
+            const now = new Date();
+            
+            if (state.mode === 'clock') {
+                let displayTime;
+                
+                if (state.timezone !== 'local') {
+                    const formatter = new Intl.DateTimeFormat('en-US', {
+                        timeZone: state.timezone,
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit',
+                        hour12: state.timeFormat === '12'
+                    });
+                    displayTime = formatter.format(now);
+                } else {
+                    const hours = state.timeFormat === '12'
+                        ? String(now.getHours() % 12 || 12).padStart(2, '0')
+                        : String(now.getHours()).padStart(2, '0');
+                    const minutes = String(now.getMinutes()).padStart(2, '0');
+                    const seconds = String(now.getSeconds()).padStart(2, '0');
+                    
+                    displayTime = state.showSeconds
+                        ? `${hours}:${minutes}:${seconds}`
+                        : `${hours}:${minutes}`;
+                }
+                
+                timeDisplay.textContent = displayTime;
+                
+                if (state.showDate) {
+                    const formatter = new Intl.DateTimeFormat('en-US', {
+                        weekday: 'short',
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric'
+                    });
+                    dateDisplay.textContent = formatter.format(now);
+                } else {
+                    dateDisplay.textContent = '';
+                }
+            }
+
+            resetInactivityTimer();
+        }
+
         function showControls() {
             controls.classList.add('visible');
-            modeControls.classList.add('visible');
-            clearTimeout(state.inactivityTimer);
+            resetInactivityTimer();
+        }
 
+        function resetInactivityTimer() {
+            if (state.inactivityTimer) {
+                clearTimeout(state.inactivityTimer);
+            }
+            
             state.inactivityTimer = setTimeout(() => {
                 controls.classList.remove('visible');
                 modeControls.classList.remove('visible');
+                timerControls.classList.remove('visible');
+                stopwatchControls.classList.remove('visible');
             }, 5000);
         }
 
@@ -1102,167 +1387,24 @@
         }
 
         function applySettings() {
-            applyColors();
-            selectFont(state.font);
-            applyThemeBackground();
-            updateSecondsToggle();
-            updateDateToggle();
+            const font = FONTS.find(f => f.name === state.font);
+            if (font) {
+                document.body.classList.add(font.class);
+            }
+            
+            updateColorInputs();
             updateGradientToggle();
             updateGradientMovementToggle();
+            updateSecondsToggle();
+            updateDateToggle();
+            applyColors();
+            
             timeFormatSelect.value = state.timeFormat;
             timezoneSelect.value = state.timezone;
             alarmSelect.value = state.alarmSound;
-            updateColorInputs();
         }
 
-        function updateClock() {
-            if (state.mode === 'clock') {
-                displayClock();
-            } else if (state.mode === 'timer') {
-                displayTimer();
-            } else if (state.mode === 'stopwatch') {
-                displayStopwatch();
-            }
-        }
-
-        function displayClock() {
-            let now;
-            if (state.timezone === 'local') {
-                now = new Date();
-            } else {
-                now = new Date(new Date().toLocaleString('en-US', { timeZone: state.timezone }));
-            }
-
-            let hours = now.getHours();
-            let minutes = now.getMinutes();
-            let seconds = now.getSeconds();
-
-            let timeStr;
-            if (state.timeFormat === '12') {
-                const ampm = hours >= 12 ? 'PM' : 'AM';
-                hours = hours % 12 || 12;
-                timeStr = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
-                if (state.showSeconds) timeStr += `:${String(seconds).padStart(2, '0')}`;
-                timeStr += ` ${ampm}`;
-            } else {
-                timeStr = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
-                if (state.showSeconds) timeStr += `:${String(seconds).padStart(2, '0')}`;
-            }
-
-            timeDisplay.textContent = timeStr;
-            updateTabTitle(timeStr);
-
-            if (state.showDate) {
-                const dateStr = now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
-                dateDisplay.textContent = dateStr;
-            } else {
-                dateDisplay.textContent = '';
-            }
-        }
-
-        function displayTimer() {
-            const minutes = Math.floor(state.timerTime / 60);
-            const seconds = state.timerTime % 60;
-            const timeStr = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-            timeDisplay.textContent = timeStr;
-            dateDisplay.textContent = '';
-            updateTabTitle(`Timer ${timeStr}`);
-
-            if (state.timerTime === 0 && state.timerRunning) {
-                pauseTimer();
-                playAlarm();
-                document.title = '✓ Timer Complete';
-            }
-        }
-
-        function displayStopwatch() {
-            const minutes = Math.floor(state.stopwatchTime / 6000);
-            const seconds = Math.floor((state.stopwatchTime % 6000) / 100);
-            const centiseconds = state.stopwatchTime % 100;
-            const timeStr = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}.${String(centiseconds).padStart(2, '0')}`;
-            timeDisplay.textContent = timeStr;
-            dateDisplay.textContent = '';
-            updateTabTitle(timeStr);
-        }
-
-        function updateTabTitle(title) {
-            document.title = title;
-        }
-
-        function playAlarm() {
-            if (state.alarmSound === 'none') return;
-            
-            // Create a simple beep using Web Audio API
-            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            const oscillator = audioContext.createOscillator();
-            const gainNode = audioContext.createGain();
-            
-            oscillator.connect(gainNode);
-            gainNode.connect(audioContext.destination);
-            
-            switch(state.alarmSound) {
-                case 'bell':
-                    oscillator.frequency.value = 800;
-                    oscillator.type = 'sine';
-                    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
-                    oscillator.start(audioContext.currentTime);
-                    oscillator.stop(audioContext.currentTime + 0.5);
-                    break;
-                case 'chime':
-                    oscillator.frequency.value = 1000;
-                    oscillator.type = 'sine';
-                    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.8);
-                    oscillator.start(audioContext.currentTime);
-                    oscillator.stop(audioContext.currentTime + 0.8);
-                    break;
-                case 'beep':
-                    oscillator.frequency.value = 600;
-                    oscillator.type = 'square';
-                    gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
-                    gainNode.gain.setValueAtTime(0, audioContext.currentTime + 0.2);
-                    oscillator.start(audioContext.currentTime);
-                    oscillator.stop(audioContext.currentTime + 0.2);
-                    break;
-            }
-        }
-
-        function pauseTimer() {
-            state.timerRunning = false;
-        }
-
-        function startStopwatch() {
-            if (!state.stopwatchRunning) {
-                state.stopwatchRunning = true;
-                const interval = setInterval(() => {
-                    if (state.stopwatchRunning) {
-                        state.stopwatchTime++;
-                    } else {
-                        clearInterval(interval);
-                    }
-                }, 10);
-            }
-        }
-
-        function pauseStopwatch() {
-            state.stopwatchRunning = false;
-        }
-
-        function resetStopwatch() {
-            state.stopwatchRunning = false;
-            state.stopwatchTime = 0;
-            updateClock();
-        }
-
-        // Timer loop
-        setInterval(() => {
-            if (state.timerRunning && state.timerTime > 0) {
-                state.timerTime--;
-            }
-        }, 1000);
-
-        // Start
+        // Start the app
         init();
     </script>
 </body>
