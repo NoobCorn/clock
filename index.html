@@ -1,1173 +1,1140 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Clock</title>
-
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Inter&family=Orbitron&family=Playfair+Display&family=Roboto+Mono&family=Space+Mono&family=Poppins&family=Montserrat&family=Raleway&family=Courier+Prime&family=Lora&display=swap');
-
-:root{
-    --background:#0f172a;
-    --background2:#1e293b;
-    --text:#ffffff;
-    --glass:rgba(255,255,255,.12);
-}
-
-
-*{
-    box-sizing:border-box;
-}
-
-
-body{
-    margin:0;
-    height:100vh;
-    overflow:hidden;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-
-    background:
-    linear-gradient(
-        135deg,
-        var(--background),
-        var(--background2)
-    );
-
-    color:var(--text);
-    font-family:Inter,sans-serif;
-
-    transition:
-        background 1s,
-        color 1s;
-}
-
-
-.container{
-    text-align:center;
-    transition:opacity 1.2s, transform 1.2s;
-}
-
-
-.clock{
-    font-size:clamp(70px,14vw,190px);
-    font-weight:600;
-    letter-spacing:-5px;
-
-    transition:
-    font-family .5s,
-    transform .5s;
-}
-
-
-.date{
-    margin-top:15px;
-    font-size:24px;
-    opacity:.65;
-}
-
-
-.hidden{
-    display:none;
-}
-
-
-.dim{
-    opacity:.12;
-    transform:scale(.98);
-}
-
-
-/* Top controls */
-
-.controls{
-
-    position:fixed;
-    top:25px;
-    right:25px;
-
-    opacity:0;
-
-    transition:.5s;
-}
-
-
-body.active .controls{
-    opacity:1;
-}
-
-
-
-.icon-btn{
-
-    width:52px;
-    height:52px;
-
-    border-radius:50%;
-
-    border:none;
-
-    color:white;
-
-    background:var(--glass);
-
-    backdrop-filter:blur(20px);
-
-    font-size:22px;
-
-    cursor:pointer;
-
-    transition:.3s;
-}
-
-
-.icon-btn:hover{
-    transform:scale(1.08);
-}
-
-
-
-/* Settings */
-
-.panel{
-
-    position:fixed;
-
-    right:-420px;
-
-    top:0;
-
-    width:380px;
-
-    height:100%;
-
-    padding:35px;
-
-    background:
-    rgba(0,0,0,.35);
-
-    backdrop-filter:blur(30px);
-
-    transition:.5s;
-
-    overflow:auto;
-
-}
-
-
-.panel.open{
-    right:0;
-}
-
-
-
-.card{
-
-    background:
-    rgba(255,255,255,.08);
-
-    border-radius:18px;
-
-    padding:18px;
-
-    margin-bottom:15px;
-
-}
-
-
-
-label{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-}
-
-
-
-select,
-input{
-
-    margin-top:10px;
-
-    width:100%;
-
-    padding:12px;
-
-    border-radius:14px;
-
-    border:none;
-
-}
-
-
-
-/* Bottom mode buttons */
-
-.modes{
-
-    position:fixed;
-
-    bottom:35px;
-
-    display:flex;
-
-    gap:12px;
-
-}
-
-
-
-.mode-btn{
-
-    border:none;
-
-    padding:12px 22px;
-
-    border-radius:30px;
-
-    background:var(--glass);
-
-    color:white;
-
-    backdrop-filter:blur(20px);
-
-    cursor:pointer;
-
-    transition:.3s;
-
-}
-
-
-.mode-btn:hover{
-
-    transform:translateY(-3px);
-
-}
-
-
-
-.extra{
-
-    font-size:40px;
-
-    margin-top:20px;
-
-}
-
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clock</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: rgba(255, 255, 255, 0.1);
+            --text-primary: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.7);
+            --accent: #ffffff;
+            --gradient-1: #ffffff;
+            --gradient-2: #ffffff;
+        }
+
+        body {
+            width: 100%;
+            height: 100vh;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            background: var(--bg-primary);
+        }
+
+        body.gradient-on {
+            background: linear-gradient(135deg, var(--gradient-1) 0%, var(--gradient-2) 100%);
+            animation: gradientShift 15s ease infinite;
+        }
+
+        body.gradient-diagonal {
+            background: linear-gradient(45deg, var(--gradient-1) 0%, var(--gradient-2) 100%);
+        }
+
+        body.gradient-radial {
+            background: radial-gradient(circle, var(--gradient-1) 0%, var(--gradient-2) 100%);
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { filter: hue-rotate(0deg); }
+            50% { filter: hue-rotate(10deg); }
+        }
+
+        body.gradient-movement-off {
+            animation: none !important;
+        }
+
+        .container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .clock-display {
+            text-align: center;
+            z-index: 10;
+        }
+
+        .time {
+            font-size: 12vw;
+            font-weight: 300;
+            letter-spacing: -0.02em;
+            color: var(--text-primary);
+            line-height: 1;
+            margin: 0;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .date {
+            font-size: 1.5vw;
+            color: var(--text-secondary);
+            margin-top: 2vw;
+            letter-spacing: 0.05em;
+            font-weight: 400;
+        }
+
+        .controls {
+            position: fixed;
+            top: 0;
+            right: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: 3vmin;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            z-index: 50;
+        }
+
+        .controls.visible {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .settings-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            background: var(--bg-secondary);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: var(--text-primary);
+            font-size: 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+            transition: all 0.2s ease;
+        }
+
+        .settings-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: scale(1.05);
+        }
+
+        .mode-controls {
+            position: fixed;
+            bottom: 3vmin;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            z-index: 50;
+        }
+
+        .mode-btn {
+            padding: 10px 24px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            cursor: pointer;
+            font-size: 14px;
+            font-family: inherit;
+            backdrop-filter: blur(10px);
+            transition: all 0.2s ease;
+        }
+
+        .mode-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .mode-btn.active {
+            background: var(--accent);
+            color: var(--bg-primary);
+            border-color: var(--accent);
+        }
+
+        .settings-panel {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 100%;
+            max-width: 400px;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(20px);
+            border-left: 1px solid rgba(255, 255, 255, 0.1);
+            transform: translateX(100%);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 100;
+            overflow-y: auto;
+            padding: 24px;
+        }
+
+        .settings-panel.open {
+            transform: translateX(0);
+        }
+
+        .settings-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+
+        .settings-header h2 {
+            font-size: 20px;
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .close-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: var(--text-primary);
+            font-size: 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s ease;
+        }
+
+        .close-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .settings-section {
+            margin-bottom: 32px;
+        }
+
+        .settings-section h3 {
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+
+        .settings-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .theme-preview {
+            aspect-ratio: 1;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .theme-preview:hover {
+            transform: scale(1.05);
+        }
+
+        .theme-preview.active {
+            border-color: var(--accent);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+        }
+
+        .font-preview {
+            padding: 12px;
+            border-radius: 8px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: var(--text-primary);
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .font-preview:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .font-preview.active {
+            border-color: var(--accent);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .toggle-group {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .toggle {
+            position: relative;
+            width: 50px;
+            height: 28px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 14px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+            border: none;
+            padding: 0;
+        }
+
+        .toggle.on {
+            background: var(--accent);
+        }
+
+        .toggle::after {
+            content: '';
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            background: white;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: left 0.2s ease;
+        }
+
+        .toggle.on::after {
+            left: 24px;
+        }
+
+        .toggle-label {
+            color: var(--text-primary);
+            font-size: 14px;
+        }
+
+        .select-group {
+            margin-bottom: 12px;
+        }
+
+        .select-label {
+            display: block;
+            color: var(--text-primary);
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        select {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        select:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        select:focus {
+            outline: none;
+            border-color: var(--accent);
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        select option {
+            background: #1a1a1a;
+            color: white;
+        }
+
+        .timer-input {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .time-input-group {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .time-input-group label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .time-input-group input {
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+            font-family: 'Roboto Mono', monospace;
+            font-size: 16px;
+            text-align: center;
+        }
+
+        .time-input-group input:focus {
+            outline: none;
+            border-color: var(--accent);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px 16px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+            font-size: 14px;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .btn.primary {
+            background: var(--accent);
+            color: var(--bg-primary);
+            border-color: var(--accent);
+        }
+
+        .btn.primary:hover {
+            opacity: 0.9;
+        }
+
+        .gradient-options {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .gradient-option {
+            flex: 1;
+            padding: 8px;
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+        }
+
+        .gradient-option.active {
+            background: var(--accent);
+            color: var(--bg-primary);
+            border-color: var(--accent);
+        }
+
+        .mode-content {
+            display: none;
+        }
+
+        .mode-content.active {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .settings-panel {
+                max-width: 100%;
+            }
+
+            .time {
+                font-size: 18vw;
+            }
+
+            .date {
+                font-size: 4vw;
+            }
+
+            .settings-group {
+                grid-template-columns: 1fr;
+            }
+
+            .mode-btn {
+                padding: 8px 16px;
+                font-size: 12px;
+            }
+        }
+
+        /* Themes */
+        .theme-midnight { background: linear-gradient(135deg, #0f0f1e 0%, #1a1a3e 100%); }
+        .theme-ocean { background: linear-gradient(135deg, #001a33 0%, #004466 100%); }
+        .theme-aurora { background: linear-gradient(135deg, #0a3a52 0%, #16e0bd 100%); }
+        .theme-sunset { background: linear-gradient(135deg, #ff6b35 0%, #ffa500 100%); }
+        .theme-purple-space { background: linear-gradient(135deg, #2d1b69 0%, #8f39fc 100%); }
+        .theme-snow { background: linear-gradient(135deg, #f5f5f5 0%, #ffffff 100%); }
+        .theme-forest { background: linear-gradient(135deg, #1b4332 0%, #52b788 100%); }
+        .theme-ember { background: linear-gradient(135deg, #6a040f 0%, #ff006e 100%); }
+        .theme-gold { background: linear-gradient(135deg, #8b7500 0%, #ffd700 100%); }
+        .theme-monochrome { background: linear-gradient(135deg, #000000 0%, #ffffff 100%); }
+
+        /* Font Styles */
+        .font-inter { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .font-helvetica { font-family: 'Helvetica Neue', -apple-system, BlinkMacSystemFont, sans-serif; }
+        .font-orbitron { font-family: 'Orbitron', monospace; }
+        .font-roboto-mono { font-family: 'Roboto Mono', monospace; }
+        .font-space-mono { font-family: 'Space Mono', monospace; }
+        .font-playfair { font-family: 'Playfair Display', serif; }
+        .font-poppins { font-family: 'Poppins', sans-serif; }
+        .font-montserrat { font-family: 'Montserrat', sans-serif; }
+        .font-raleway { font-family: 'Raleway', sans-serif; }
+        .font-lora { font-family: 'Lora', serif; }
+
+        .dim {
+            opacity: 0.5;
+        }
+    </style>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Orbitron:wght@400;700&family=Roboto+Mono:wght@400;700&family=Space+Mono:wght@400;700&family=Playfair+Display:wght@400;700&family=Poppins:wght@400;600&family=Montserrat:wght@400;600&family=Raleway:wght@400;600&family=Lora:wght@400;600&display=swap" rel="stylesheet">
 </head>
 <body>
-
-<div class="controls">
-    <button class="icon-btn" onclick="openSettings()">⚙</button>
-</div>
-
-
-<div class="container" id="main">
-
-    <div class="clock" id="clock">
-        12:00:00
+    <div class="container">
+        <div class="clock-display">
+            <p class="time" id="time">00:00:00</p>
+            <p class="date" id="date"></p>
+        </div>
     </div>
 
-    <div class="date hidden" id="date">
-        Monday, January 1
+    <div class="controls" id="controls">
+        <button class="settings-btn" id="settingsBtn">⚙️</button>
+        <div></div>
     </div>
 
-    <div class="extra" id="extra"></div>
-
-</div>
-
-
-
-<!-- Modes -->
-
-<div class="modes">
-
-    <button class="mode-btn" onclick="changeMode('clock')">
-        Clock
-    </button>
-
-    <button class="mode-btn" onclick="changeMode('timer')">
-        Timer
-    </button>
-
-    <button class="mode-btn" onclick="changeMode('stopwatch')">
-        Stopwatch
-    </button>
-
-</div>
-
-
-
-
-
-<!-- Settings Panel -->
-
-<div class="panel" id="panel">
-
-<h2>Settings</h2>
-
-
-
-<div class="card">
-
-<h3>Appearance</h3>
-
-
-<label>
-Theme
-
-<select id="theme">
-
-<option value="midnight">
-Midnight
-</option>
-
-<option value="ocean">
-Ocean
-</option>
-
-<option value="sunset">
-Sunset
-</option>
-
-<option value="forest">
-Forest
-</option>
-
-<option value="purple">
-Purple
-</option>
-
-<option value="clean">
-Clean
-</option>
-
-<option value="rose">
-Rose
-</option>
-
-<option value="blue">
-Blue
-</option>
-
-<option value="gold">
-Gold
-</option>
-
-<option value="dark">
-Dark
-</option>
-
-</select>
-
-</label>
-
-</div>
-
-
-
-
-
-<div class="card">
-
-<h3>Font</h3>
-
-
-<select id="font">
-
-<option>
-Inter
-</option>
-
-<option>
-Orbitron
-</option>
-
-<option>
-Playfair Display
-</option>
-
-<option>
-Roboto Mono
-</option>
-
-<option>
-Space Mono
-</option>
-
-<option>
-Poppins
-</option>
-
-<option>
-Montserrat
-</option>
-
-<option>
-Raleway
-</option>
-
-<option>
-Courier Prime
-</option>
-
-<option>
-Lora
-</option>
-
-
-</select>
-
-
-</div>
-
-
-
-
-
-<div class="card">
-
-<h3>Time</h3>
-
-
-<label>
-
-12 / 24 Hour
-
-<select id="format">
-
-<option value="12">
-12 Hour
-</option>
-
-<option value="24">
-24 Hour
-</option>
-
-</select>
-
-</label>
-
-
-
-<label>
-
-Seconds
-
-<input 
-type="checkbox"
-id="seconds"
-checked>
-
-</label>
-
-
-
-<label>
-
-Show Date
-
-<input 
-type="checkbox"
-id="showDate">
-
-</label>
-
-
-
-</div>
-
-
-
-
-
-
-<div class="card">
-
-<h3>Timezone</h3>
-
-
-<select id="timezone">
-
-<option value="local">
-Local Time
-</option>
-
-
-<option value="America/New_York">
-New York
-</option>
-
-
-<option value="Europe/London">
-London
-</option>
-
-
-<option value="Europe/Paris">
-Paris
-</option>
-
-
-<option value="Asia/Tokyo">
-Tokyo
-</option>
-
-
-<option value="Asia/Shanghai">
-Shanghai
-</option>
-
-
-<option value="Australia/Sydney">
-Sydney
-</option>
-
-
-</select>
-
-
-</div>
-
-
-
-
-
-
-
-<div class="card">
-
-<h3>Timer</h3>
-
-
-<input 
-type="number"
-id="timerMinutes"
-placeholder="Minutes">
-
-
-<button 
-class="mode-btn"
-onclick="startTimer()">
-
-Start Timer
-
-</button>
-
-
-</div>
-
-
-
-
-
-
-<div class="card">
-
-<h3>Controls</h3>
-
-
-<button 
-class="mode-btn"
-onclick="closeSettings()">
-
-Close
-
-</button>
-
-
-</div>
-
-
-</div>
-
-
-
-
-
-<script>
-const clock = document.getElementById("clock");
-const date = document.getElementById("date");
-const panel = document.getElementById("panel");
-const main = document.getElementById("main");
-const extra = document.getElementById("extra");
-
-
-let mode = "clock";
-
-let settings = JSON.parse(localStorage.getItem("clockSettings")) || {
-
-    theme:"midnight",
-    font:"Inter",
-    format:"12",
-    seconds:true,
-    showDate:false,
-    timezone:"local"
-
-};
-
-
-
-let timer = 0;
-let stopwatch = 0;
-let running = false;
-
-let idleTimer;
-
-
-
-// --------------------
-// Settings
-// --------------------
-
-
-function save(){
-
-    localStorage.setItem(
-        "clockSettings",
-        JSON.stringify(settings)
-    );
-
-}
-
-
-
-function openSettings(){
-
-    panel.classList.add("open");
-
-}
-
-
-
-function closeSettings(){
-
-    panel.classList.remove("open");
-
-}
-
-
-
-// --------------------
-// Activity Fade
-// --------------------
-
-
-function wake(){
-
-    document.body.classList.add("active");
-
-    main.classList.remove("dim");
-
-
-    clearTimeout(idleTimer);
-
-
-    idleTimer=setTimeout(()=>{
-
-        main.classList.add("dim");
-
-        document.body.classList.remove("active");
-
-    },5000);
-
-}
-
-
-document.addEventListener(
-"mousemove",
-wake
-);
-
-
-document.addEventListener(
-"keydown",
-wake
-);
-
-
-
-wake();
-
-
-
-
-// --------------------
-// Clock
-// --------------------
-
-
-function updateClock(){
-
-
-if(mode!=="clock") return;
-
-
-let now = new Date();
-
-
-
-let options={};
-
-
-
-if(settings.timezone!=="local"){
-
-    options.timeZone=settings.timezone;
-
-}
-
-
-
-
-if(settings.format==="12"){
-
-
-clock.innerHTML =
-new Intl.DateTimeFormat(
-"en-US",
-{
-hour:"numeric",
-minute:"2-digit",
-second:
-settings.seconds
-?
-"2-digit"
-:
-undefined,
-hour12:true,
-...options
-}
-)
-.format(now);
-
-
-
-}else{
-
-
-let parts =
-new Intl.DateTimeFormat(
-"en-US",
-{
-hour:"2-digit",
-minute:"2-digit",
-second:
-settings.seconds
-?
-"2-digit"
-:
-undefined,
-hour12:false,
-...options
-}
-)
-.format(now);
-
-
-
-clock.innerHTML=parts;
-
-
-
-}
-
-
-
-if(settings.showDate){
-
-
-date.classList.remove("hidden");
-
-
-date.innerHTML =
-new Intl.DateTimeFormat(
-"en-US",
-{
-weekday:"long",
-month:"long",
-day:"numeric",
-...options
-}
-)
-.format(now);
-
-
-
-}else{
-
-
-date.classList.add("hidden");
-
-
-}
-
-
-
-document.title=clock.innerText;
-
-
-
-}
-
-
-
-
-
-// --------------------
-// Timer
-// --------------------
-
-
-function startTimer(){
-
-
-let mins =
-Number(
-document.getElementById("timerMinutes").value
-);
-
-
-
-if(mins){
-
-timer = mins*60;
-
-mode="timer";
-
-}
-
-
-
-}
-
-
-
-function updateTimer(){
-
-
-if(mode!=="timer") return;
-
-
-if(timer>0 && running){
-
-timer--;
-
-}
-
-
-
-let m=Math.floor(timer/60);
-
-let s=timer%60;
-
-
-
-extra.innerHTML =
-`${m}:${String(s).padStart(2,"0")}`;
-
-
-
-document.title =
-`Timer ${extra.innerText}`;
-
-
-
-}
-
-
-
-
-
-// --------------------
-// Stopwatch
-// --------------------
-
-
-function updateStopwatch(){
-
-
-if(mode!=="stopwatch") return;
-
-
-if(running){
-
-stopwatch++;
-
-}
-
-
-
-let m=Math.floor(stopwatch/60);
-
-let s=stopwatch%60;
-
-
-extra.innerHTML =
-`${m}:${String(s).padStart(2,"0")}`;
-
-
-document.title =
-`Stopwatch ${extra.innerText}`;
-
-
-
-}
-
-
-
-
-
-function changeMode(newMode){
-
-
-mode=newMode;
-
-
-extra.innerHTML="";
-
-
-if(mode==="clock"){
-
-updateClock();
-
-}
-
-
-}
-
-
-
-
-
-// --------------------
-// Controls
-// --------------------
-
-
-theme.onchange=function(){
-
-settings.theme=this.value;
-
-applyTheme();
-
-save();
-
-};
-
-
-
-font.onchange=function(){
-
-settings.font=this.value;
-
-document.body.style.fontFamily=
-this.value;
-
-
-save();
-
-
-};
-
-
-
-format.onchange=function(){
-
-settings.format=this.value;
-
-save();
-
-
-};
-
-
-
-seconds.onchange=function(){
-
-settings.seconds=this.checked;
-
-save();
-
-
-};
-
-
-
-showDate.onchange=function(){
-
-settings.showDate=this.checked;
-
-save();
-
-
-};
-
-
-
-timezone.onchange=function(){
-
-settings.timezone=this.value;
-
-save();
-
-
-};
-
-
-
-
-
-// --------------------
-// Themes
-// --------------------
-
-
-function applyTheme(){
-
-
-let themes={
-
-
-midnight:[
-"#0f172a",
-"#1e293b"
-],
-
-
-ocean:[
-"#0f2027",
-"#203a43"
-],
-
-
-sunset:[
-"#ff512f",
-"#dd2476"
-],
-
-
-forest:[
-"#134e5e",
-"#71b280"
-],
-
-
-purple:[
-"#41295a",
-"#2f0743"
-],
-
-
-clean:[
-"#eeeeee",
-"#999999"
-],
-
-
-rose:[
-"#ff758c",
-"#ff7eb3"
-],
-
-
-blue:[
-"#2980b9",
-"#6dd5fa"
-],
-
-
-gold:[
-"#614385",
-"#516395"
-],
-
-
-dark:[
-"#000000",
-"#111111"
-]
-
-
-};
-
-
-
-let t =
-themes[settings.theme];
-
-
-document.body.style.background =
-`linear-gradient(135deg,${t[0]},${t[1]})`;
-
-}
-
-
-
-
-// --------------------
-// Restore Settings
-// --------------------
-
-
-function load(){
-
-
-theme.value=settings.theme;
-
-font.value=settings.font;
-
-format.value=settings.format;
-
-seconds.checked=settings.seconds;
-
-showDate.checked=settings.showDate;
-
-timezone.value=settings.timezone;
-
-
-document.body.style.fontFamily=
-settings.font;
-
-
-applyTheme();
-
-
-}
-
-
-
-
-
-// --------------------
-// Main Loop
-// --------------------
-
-
-setInterval(()=>{
-
-updateClock();
-
-updateTimer();
-
-updateStopwatch();
-
-
-},1000);
-
-
-
-
-load();
-
-updateClock();
-
-</script>
-
-
+    <div class="mode-controls" id="modeControls">
+        <button class="mode-btn active" data-mode="clock">Clock</button>
+        <button class="mode-btn" data-mode="timer">Timer</button>
+        <button class="mode-btn" data-mode="stopwatch">Stopwatch</button>
+    </div>
+
+    <div class="settings-panel" id="settingsPanel">
+        <div class="settings-header">
+            <h2>Settings</h2>
+            <button class="close-btn" id="closeSettings">&times;</button>
+        </div>
+
+        <!-- Themes -->
+        <div class="settings-section">
+            <h3>Theme</h3>
+            <div class="settings-group" id="themeGroup">
+                <!-- Generated by JS -->
+            </div>
+        </div>
+
+        <!-- Gradient -->
+        <div class="settings-section">
+            <h3>Gradient</h3>
+            <div class="toggle-group">
+                <button class="toggle" id="gradientToggle"></button>
+                <label class="toggle-label">Enable Gradient</label>
+            </div>
+            <div id="gradientOptions" style="display: none;">
+                <div class="toggle-group">
+                    <button class="toggle" id="gradientMovementToggle"></button>
+                    <label class="toggle-label">Animate Gradient</label>
+                </div>
+                <label class="settings-label" style="display: block; color: var(--text-primary); font-size: 12px; margin-bottom: 8px;">Style</label>
+                <div class="gradient-options">
+                    <button class="gradient-option active" data-gradient="linear">Linear</button>
+                    <button class="gradient-option" data-gradient="diagonal">Diagonal</button>
+                    <button class="gradient-option" data-gradient="radial">Radial</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Font -->
+        <div class="settings-section">
+            <h3>Font</h3>
+            <div class="settings-group" id="fontGroup">
+                <!-- Generated by JS -->
+            </div>
+        </div>
+
+        <!-- Time Settings -->
+        <div class="settings-section">
+            <h3>Time</h3>
+            <div class="toggle-group">
+                <button class="toggle" id="secondsToggle"></button>
+                <label class="toggle-label">Show Seconds</label>
+            </div>
+            <div class="toggle-group">
+                <button class="toggle" id="dateToggle"></button>
+                <label class="toggle-label">Show Date</label>
+            </div>
+            <div class="select-group">
+                <label class="select-label">Format</label>
+                <select id="timeFormatSelect">
+                    <option value="12">12 Hour</option>
+                    <option value="24">24 Hour</option>
+                </select>
+            </div>
+            <div class="select-group">
+                <label class="select-label">Timezone</label>
+                <select id="timezoneSelect">
+                    <option value="local">Local</option>
+                    <option value="America/New_York">New York</option>
+                    <option value="Europe/London">London</option>
+                    <option value="Europe/Paris">Paris</option>
+                    <option value="Asia/Tokyo">Tokyo</option>
+                    <option value="Asia/Shanghai">Shanghai</option>
+                    <option value="Australia/Sydney">Sydney</option>
+                    <option value="Asia/Dubai">Dubai</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Timer Mode -->
+        <div class="settings-section mode-content" id="timerSettings">
+            <h3>Timer</h3>
+            <div class="timer-input">
+                <div class="time-input-group">
+                    <label>Minutes</label>
+                    <input type="number" id="timerMinutes" min="0" max="59" value="5">
+                </div>
+                <div class="time-input-group">
+                    <label>Seconds</label>
+                    <input type="number" id="timerSeconds" min="0" max="59" value="0">
+                </div>
+            </div>
+            <div class="button-group">
+                <button class="btn primary" id="timerStart">Start</button>
+                <button class="btn" id="timerPause">Pause</button>
+                <button class="btn" id="timerReset">Reset</button>
+            </div>
+        </div>
+
+        <!-- Stopwatch Mode -->
+        <div class="settings-section mode-content" id="stopwatchSettings">
+            <h3>Stopwatch</h3>
+            <div class="button-group">
+                <button class="btn primary" id="stopwatchStart">Start</button>
+                <button class="btn" id="stopwatchPause">Pause</button>
+                <button class="btn" id="stopwatchReset">Reset</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const THEMES = [
+            { name: 'Midnight', class: 'theme-midnight', colors: { primary: '#ffffff', secondary: 'rgba(255,255,255,0.7)' } },
+            { name: 'Ocean', class: 'theme-ocean', colors: { primary: '#ffffff', secondary: 'rgba(255,255,255,0.7)' } },
+            { name: 'Aurora', class: 'theme-aurora', colors: { primary: '#ffffff', secondary: 'rgba(255,255,255,0.7)' } },
+            { name: 'Sunset', class: 'theme-sunset', colors: { primary: '#000000', secondary: 'rgba(0,0,0,0.6)' } },
+            { name: 'Purple Space', class: 'theme-purple-space', colors: { primary: '#ffffff', secondary: 'rgba(255,255,255,0.7)' } },
+            { name: 'Snow', class: 'theme-snow', colors: { primary: '#000000', secondary: 'rgba(0,0,0,0.6)' } },
+            { name: 'Forest', class: 'theme-forest', colors: { primary: '#ffffff', secondary: 'rgba(255,255,255,0.7)' } },
+            { name: 'Ember', class: 'theme-ember', colors: { primary: '#ffffff', secondary: 'rgba(255,255,255,0.7)' } },
+            { name: 'Gold', class: 'theme-gold', colors: { primary: '#000000', secondary: 'rgba(0,0,0,0.6)' } },
+            { name: 'Monochrome', class: 'theme-monochrome', colors: { primary: '#000000', secondary: 'rgba(0,0,0,0.6)' } }
+        ];
+
+        const FONTS = [
+            { name: 'Inter', class: 'font-inter' },
+            { name: 'Helvetica', class: 'font-helvetica' },
+            { name: 'Orbitron', class: 'font-orbitron' },
+            { name: 'Roboto Mono', class: 'font-roboto-mono' },
+            { name: 'Space Mono', class: 'font-space-mono' },
+            { name: 'Playfair', class: 'font-playfair' },
+            { name: 'Poppins', class: 'font-poppins' },
+            { name: 'Montserrat', class: 'font-montserrat' },
+            { name: 'Raleway', class: 'font-raleway' },
+            { name: 'Lora', class: 'font-lora' }
+        ];
+
+        // State
+        const state = {
+            mode: 'clock',
+            theme: 'Midnight',
+            font: 'Inter',
+            showSeconds: true,
+            showDate: true,
+            timeFormat: '12',
+            timezone: 'local',
+            gradientOn: false,
+            gradientMovement: false,
+            gradientStyle: 'linear',
+            timerRunning: false,
+            timerTime: 0,
+            stopwatchRunning: false,
+            stopwatchTime: 0,
+            controlsVisible: false,
+            inactivityTimer: null
+        };
+
+        // DOM Elements
+        const timeDisplay = document.getElementById('time');
+        const dateDisplay = document.getElementById('date');
+        const settingsBtn = document.getElementById('settingsBtn');
+        const settingsPanel = document.getElementById('settingsPanel');
+        const closeSettings = document.getElementById('closeSettings');
+        const controls = document.getElementById('controls');
+        const modeControls = document.getElementById('modeControls');
+        const gradientToggle = document.getElementById('gradientToggle');
+        const gradientOptions = document.getElementById('gradientOptions');
+        const gradientMovementToggle = document.getElementById('gradientMovementToggle');
+        const secondsToggle = document.getElementById('secondsToggle');
+        const dateToggle = document.getElementById('dateToggle');
+        const timeFormatSelect = document.getElementById('timeFormatSelect');
+        const timezoneSelect = document.getElementById('timezoneSelect');
+        const timerMinutes = document.getElementById('timerMinutes');
+        const timerSeconds = document.getElementById('timerSeconds');
+        const timerStartBtn = document.getElementById('timerStart');
+        const timerPauseBtn = document.getElementById('timerPause');
+        const timerResetBtn = document.getElementById('timerReset');
+        const stopwatchStartBtn = document.getElementById('stopwatchStart');
+        const stopwatchPauseBtn = document.getElementById('stopwatchPause');
+        const stopwatchResetBtn = document.getElementById('stopwatchReset');
+
+        // Initialize
+        function init() {
+            loadSettings();
+            renderThemes();
+            renderFonts();
+            setupEventListeners();
+            updateClock();
+            setInterval(updateClock, 100);
+            applySettings();
+        }
+
+        function loadSettings() {
+            const saved = localStorage.getItem('clockSettings');
+            if (saved) {
+                const settings = JSON.parse(saved);
+                Object.assign(state, settings);
+            }
+        }
+
+        function saveSettings() {
+            const toSave = {
+                theme: state.theme,
+                font: state.font,
+                showSeconds: state.showSeconds,
+                showDate: state.showDate,
+                timeFormat: state.timeFormat,
+                timezone: state.timezone,
+                gradientOn: state.gradientOn,
+                gradientMovement: state.gradientMovement,
+                gradientStyle: state.gradientStyle,
+                mode: state.mode
+            };
+            localStorage.setItem('clockSettings', JSON.stringify(toSave));
+        }
+
+        function renderThemes() {
+            const group = document.getElementById('themeGroup');
+            group.innerHTML = THEMES.map(theme => 
+                `<div class="theme-preview ${theme.class} ${state.theme === theme.name ? 'active' : ''}" 
+                     data-theme="${theme.name}" 
+                     title="${theme.name}"></div>`
+            ).join('');
+            
+            group.querySelectorAll('.theme-preview').forEach(el => {
+                el.addEventListener('click', () => selectTheme(el.dataset.theme));
+            });
+        }
+
+        function renderFonts() {
+            const group = document.getElementById('fontGroup');
+            group.innerHTML = FONTS.map(font => 
+                `<div class="font-preview ${font.class} ${state.font === font.name ? 'active' : ''}" 
+                     data-font="${font.name}">
+                    ${font.name}
+                </div>`
+            ).join('');
+            
+            group.querySelectorAll('.font-preview').forEach(el => {
+                el.addEventListener('click', () => selectFont(el.dataset.font));
+            });
+        }
+
+        function selectTheme(themeName) {
+            state.theme = themeName;
+            const theme = THEMES.find(t => t.name === themeName);
+            
+            document.documentElement.style.setProperty('--bg-primary', theme.colors.primary === '#ffffff' ? '#ffffff' : '#000000');
+            document.documentElement.style.setProperty('--text-primary', theme.colors.primary);
+            document.documentElement.style.setProperty('--text-secondary', theme.colors.secondary);
+            document.documentElement.style.setProperty('--accent', theme.colors.primary);
+            
+            document.querySelectorAll('.theme-preview').forEach(el => {
+                el.classList.toggle('active', el.dataset.theme === themeName);
+            });
+            
+            applyThemeGradient();
+            saveSettings();
+        }
+
+        function selectFont(fontName) {
+            state.font = fontName;
+            const font = FONTS.find(f => f.name === fontName);
+            document.body.classList.remove(...Array.from(document.body.classList).filter(c => c.startsWith('font-')));
+            document.body.classList.add(font.class);
+            
+            document.querySelectorAll('.font-preview').forEach(el => {
+                el.classList.toggle('active', el.dataset.font === fontName);
+            });
+            
+            saveSettings();
+        }
+
+        function applyThemeGradient() {
+            const theme = THEMES.find(t => t.name === state.theme);
+            if (!theme) return;
+
+            const gradientClass = theme.class;
+            const gradients = {
+                'theme-midnight': { from: '#0f0f1e', to: '#1a1a3e' },
+                'theme-ocean': { from: '#001a33', to: '#004466' },
+                'theme-aurora': { from: '#0a3a52', to: '#16e0bd' },
+                'theme-sunset': { from: '#ff6b35', to: '#ffa500' },
+                'theme-purple-space': { from: '#2d1b69', to: '#8f39fc' },
+                'theme-snow': { from: '#f5f5f5', to: '#ffffff' },
+                'theme-forest': { from: '#1b4332', to: '#52b788' },
+                'theme-ember': { from: '#6a040f', to: '#ff006e' },
+                'theme-gold': { from: '#8b7500', to: '#ffd700' },
+                'theme-monochrome': { from: '#000000', to: '#ffffff' }
+            };
+
+            const gradient = gradients[gradientClass] || { from: '#ffffff', to: '#ffffff' };
+            document.documentElement.style.setProperty('--gradient-1', gradient.from);
+            document.documentElement.style.setProperty('--gradient-2', gradient.to);
+        }
+
+        function setupEventListeners() {
+            // Settings
+            settingsBtn.addEventListener('click', () => {
+                settingsPanel.classList.add('open');
+                showControls();
+            });
+
+            closeSettings.addEventListener('click', () => {
+                settingsPanel.classList.remove('open');
+            });
+
+            // Gradient
+            gradientToggle.addEventListener('click', () => {
+                state.gradientOn = !state.gradientOn;
+                updateGradientToggle();
+                applySettings();
+                saveSettings();
+            });
+
+            gradientMovementToggle.addEventListener('click', () => {
+                state.gradientMovement = !state.gradientMovement;
+                updateGradientMovementToggle();
+                applySettings();
+                saveSettings();
+            });
+
+            document.querySelectorAll('.gradient-option').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.gradient-option').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    state.gradientStyle = btn.dataset.gradient;
+                    applySettings();
+                    saveSettings();
+                });
+            });
+
+            // Time settings
+            secondsToggle.addEventListener('click', () => {
+                state.showSeconds = !state.showSeconds;
+                updateSecondsToggle();
+                saveSettings();
+            });
+
+            dateToggle.addEventListener('click', () => {
+                state.showDate = !state.showDate;
+                updateDateToggle();
+                saveSettings();
+            });
+
+            timeFormatSelect.addEventListener('change', (e) => {
+                state.timeFormat = e.target.value;
+                saveSettings();
+            });
+
+            timezoneSelect.addEventListener('change', (e) => {
+                state.timezone = e.target.value;
+                saveSettings();
+            });
+
+            // Mode controls
+            document.querySelectorAll('.mode-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    selectMode(btn.dataset.mode);
+                    showControls();
+                });
+            });
+
+            // Timer
+            timerStartBtn.addEventListener('click', startTimer);
+            timerPauseBtn.addEventListener('click', pauseTimer);
+            timerResetBtn.addEventListener('click', resetTimer);
+
+            // Stopwatch
+            stopwatchStartBtn.addEventListener('click', startStopwatch);
+            stopwatchPauseBtn.addEventListener('click', pauseStopwatch);
+            stopwatchResetBtn.addEventListener('click', resetStopwatch);
+
+            // Mouse activity
+            document.addEventListener('mousemove', showControls);
+            document.addEventListener('click', (e) => {
+                if (!settingsPanel.contains(e.target) && !settingsBtn.contains(e.target)) {
+                    // Clicked outside settings
+                }
+            });
+        }
+
+        function selectMode(mode) {
+            state.mode = mode;
+            
+            document.querySelectorAll('.mode-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.mode === mode);
+            });
+
+            document.querySelectorAll('.mode-content').forEach(el => {
+                el.classList.remove('active');
+            });
+
+            if (mode === 'timer') {
+                document.getElementById('timerSettings').classList.add('active');
+            } else if (mode === 'stopwatch') {
+                document.getElementById('stopwatchSettings').classList.add('active');
+            }
+
+            saveSettings();
+        }
+
+        function showControls() {
+            controls.classList.add('visible');
+            modeControls.classList.add('visible');
+            document.body.classList.remove('dim');
+            clearTimeout(state.inactivityTimer);
+
+            state.inactivityTimer = setTimeout(() => {
+                controls.classList.remove('visible');
+                modeControls.classList.remove('visible');
+                document.body.classList.add('dim');
+            }, 5000);
+        }
+
+        function updateGradientToggle() {
+            if (state.gradientOn) {
+                gradientToggle.classList.add('on');
+                gradientOptions.style.display = 'block';
+            } else {
+                gradientToggle.classList.remove('on');
+                gradientOptions.style.display = 'none';
+            }
+        }
+
+        function updateGradientMovementToggle() {
+            if (state.gradientMovement) {
+                gradientMovementToggle.classList.add('on');
+            } else {
+                gradientMovementToggle.classList.remove('on');
+            }
+        }
+
+        function updateSecondsToggle() {
+            if (state.showSeconds) {
+                secondsToggle.classList.add('on');
+            } else {
+                secondsToggle.classList.remove('on');
+            }
+        }
+
+        function updateDateToggle() {
+            if (state.showDate) {
+                dateToggle.classList.add('on');
+            } else {
+                dateToggle.classList.remove('on');
+            }
+        }
+
+        function applySettings() {
+            // Apply theme
+            selectTheme(state.theme);
+
+            // Apply font
+            selectFont(state.font);
+
+            // Apply gradient
+            const body = document.body;
+            body.classList.remove('gradient-on', 'gradient-diagonal', 'gradient-radial', 'gradient-movement-off');
+            
+            if (state.gradientOn) {
+                body.classList.add('gradient-on', `gradient-${state.gradientStyle}`);
+                if (!state.gradientMovement) {
+                    body.classList.add('gradient-movement-off');
+                }
+            }
+
+            // Apply toggles
+            updateSecondsToggle();
+            updateDateToggle();
+            updateGradientToggle();
+            updateGradientMovementToggle();
+
+            // Apply selects
+            timeFormatSelect.value = state.timeFormat;
+            timezoneSelect.value = state.timezone;
+        }
+
+        function updateClock() {
+            if (state.mode === 'clock') {
+                displayClock();
+            } else if (state.mode === 'timer') {
+                displayTimer();
+            } else if (state.mode === 'stopwatch') {
+                displayStopwatch();
+            }
+        }
+
+        function displayClock() {
+            let now;
+            if (state.timezone === 'local') {
+                now = new Date();
+            } else {
+                now = new Date(new Date().toLocaleString('en-US', { timeZone: state.timezone }));
+            }
+
+            let hours = now.getHours();
+            let minutes = now.getMinutes();
+            let seconds = now.getSeconds();
+
+            let timeStr;
+            if (state.timeFormat === '12') {
+                const ampm = hours >= 12 ? 'PM' : 'AM';
+                hours = hours % 12 || 12;
+                timeStr = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+                if (state.showSeconds) timeStr += `:${String(seconds).padStart(2, '0')}`;
+                timeStr += ` ${ampm}`;
+            } else {
+                timeStr = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+                if (state.showSeconds) timeStr += `:${String(seconds).padStart(2, '0')}`;
+            }
+
+            timeDisplay.textContent = timeStr;
+            updateTabTitle(timeStr);
+
+            if (state.showDate) {
+                const dateStr = now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+                dateDisplay.textContent = dateStr;
+            } else {
+                dateDisplay.textContent = '';
+            }
+        }
+
+        function displayTimer() {
+            const minutes = Math.floor(state.timerTime / 60);
+            const seconds = state.timerTime % 60;
+            const timeStr = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            timeDisplay.textContent = timeStr;
+            dateDisplay.textContent = '';
+            updateTabTitle(`Timer ${timeStr}`);
+
+            if (state.timerTime === 0 && state.timerRunning) {
+                pauseTimer();
+                document.title = '✓ Timer Complete';
+            }
+        }
+
+        function displayStopwatch() {
+            const minutes = Math.floor(state.stopwatchTime / 6000);
+            const seconds = Math.floor((state.stopwatchTime % 6000) / 100);
+            const centiseconds = state.stopwatchTime % 100;
+            const timeStr = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}.${String(centiseconds).padStart(2, '0')}`;
+            timeDisplay.textContent = timeStr;
+            dateDisplay.textContent = '';
+            updateTabTitle(timeStr);
+        }
+
+        function updateTabTitle(title) {
+            document.title = title;
+        }
+
+        function startTimer() {
+            if (!state.timerRunning) {
+                state.timerRunning = true;
+                const mins = parseInt(timerMinutes.value) || 0;
+                const secs = parseInt(timerSeconds.value) || 0;
+                state.timerTime = mins * 60 + secs;
+
+                const interval = setInterval(() => {
+                    if (state.timerRunning) {
+                        state.timerTime--;
+                        if (state.timerTime < 0) {
+                            state.timerTime = 0;
+                            pauseTimer();
+                        }
+                    } else {
+                        clearInterval(interval);
+                    }
+                }, 1000);
+            }
+        }
+
+        function pauseTimer() {
+            state.timerRunning = false;
+        }
+
+        function resetTimer() {
+            state.timerRunning = false;
+            state.timerTime = 0;
+            updateClock();
+        }
+
+        function startStopwatch() {
+            if (!state.stopwatchRunning) {
+                state.stopwatchRunning = true;
+                const interval = setInterval(() => {
+                    if (state.stopwatchRunning) {
+                        state.stopwatchTime++;
+                    } else {
+                        clearInterval(interval);
+                    }
+                }, 10);
+            }
+        }
+
+        function pauseStopwatch() {
+            state.stopwatchRunning = false;
+        }
+
+        function resetStopwatch() {
+            state.stopwatchRunning = false;
+            state.stopwatchTime = 0;
+            updateClock();
+        }
+
+        // Start
+        init();
+    </script>
 </body>
 </html>
