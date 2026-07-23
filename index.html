@@ -75,6 +75,7 @@
             line-height: 1;
             margin: 0;
             font-variant-numeric: tabular-nums;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
 
         .date {
@@ -83,6 +84,7 @@
             margin-top: 2vw;
             letter-spacing: 0.05em;
             font-weight: 400;
+            text-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
         }
 
         .controls {
@@ -241,6 +243,13 @@
             transition: all 0.2s ease;
             position: relative;
             overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: 600;
+            color: white;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
         }
 
         .theme-preview:hover {
@@ -482,16 +491,16 @@
         }
 
         /* Themes */
-        .theme-midnight { background: linear-gradient(135deg, #0f0f1e 0%, #1a1a3e 100%); }
-        .theme-ocean { background: linear-gradient(135deg, #001a33 0%, #004466 100%); }
-        .theme-aurora { background: linear-gradient(135deg, #0a3a52 0%, #16e0bd 100%); }
-        .theme-sunset { background: linear-gradient(135deg, #ff6b35 0%, #ffa500 100%); }
-        .theme-purple-space { background: linear-gradient(135deg, #2d1b69 0%, #8f39fc 100%); }
-        .theme-snow { background: linear-gradient(135deg, #f5f5f5 0%, #ffffff 100%); }
-        .theme-forest { background: linear-gradient(135deg, #1b4332 0%, #52b788 100%); }
-        .theme-ember { background: linear-gradient(135deg, #6a040f 0%, #ff006e 100%); }
-        .theme-gold { background: linear-gradient(135deg, #8b7500 0%, #ffd700 100%); }
-        .theme-monochrome { background: linear-gradient(135deg, #000000 0%, #ffffff 100%); }
+        .theme-midnight { background: linear-gradient(135deg, #0f0f1e 0%, #1a1a3e 100%); color: #ffffff; }
+        .theme-ocean { background: linear-gradient(135deg, #001a33 0%, #004466 100%); color: #ffffff; }
+        .theme-aurora { background: linear-gradient(135deg, #0a3a52 0%, #16e0bd 100%); color: #ffffff; }
+        .theme-sunset { background: linear-gradient(135deg, #ff6b35 0%, #ffa500 100%); color: #000000; }
+        .theme-purple-space { background: linear-gradient(135deg, #2d1b69 0%, #8f39fc 100%); color: #ffffff; }
+        .theme-snow { background: linear-gradient(135deg, #f5f5f5 0%, #ffffff 100%); color: #000000; }
+        .theme-forest { background: linear-gradient(135deg, #1b4332 0%, #52b788 100%); color: #ffffff; }
+        .theme-ember { background: linear-gradient(135deg, #6a040f 0%, #ff006e 100%); color: #ffffff; }
+        .theme-gold { background: linear-gradient(135deg, #8b7500 0%, #ffd700 100%); color: #000000; }
+        .theme-monochrome { background: linear-gradient(135deg, #000000 0%, #ffffff 100%); color: #ffffff; }
 
         /* Font Styles */
         .font-inter { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
@@ -640,16 +649,16 @@
 
     <script>
         const THEMES = [
-            { name: 'Midnight', class: 'theme-midnight', colors: { primary: '#ffffff', secondary: 'rgba(255,255,255,0.7)' } },
-            { name: 'Ocean', class: 'theme-ocean', colors: { primary: '#ffffff', secondary: 'rgba(255,255,255,0.7)' } },
-            { name: 'Aurora', class: 'theme-aurora', colors: { primary: '#ffffff', secondary: 'rgba(255,255,255,0.7)' } },
-            { name: 'Sunset', class: 'theme-sunset', colors: { primary: '#000000', secondary: 'rgba(0,0,0,0.6)' } },
-            { name: 'Purple Space', class: 'theme-purple-space', colors: { primary: '#ffffff', secondary: 'rgba(255,255,255,0.7)' } },
-            { name: 'Snow', class: 'theme-snow', colors: { primary: '#000000', secondary: 'rgba(0,0,0,0.6)' } },
-            { name: 'Forest', class: 'theme-forest', colors: { primary: '#ffffff', secondary: 'rgba(255,255,255,0.7)' } },
-            { name: 'Ember', class: 'theme-ember', colors: { primary: '#ffffff', secondary: 'rgba(255,255,255,0.7)' } },
-            { name: 'Gold', class: 'theme-gold', colors: { primary: '#000000', secondary: 'rgba(0,0,0,0.6)' } },
-            { name: 'Monochrome', class: 'theme-monochrome', colors: { primary: '#000000', secondary: 'rgba(0,0,0,0.6)' } }
+            { name: 'Midnight', class: 'theme-midnight', textColor: '#ffffff', textSecondary: 'rgba(255,255,255,0.7)', gradient1: '#0f0f1e', gradient2: '#1a1a3e' },
+            { name: 'Ocean', class: 'theme-ocean', textColor: '#ffffff', textSecondary: 'rgba(255,255,255,0.7)', gradient1: '#001a33', gradient2: '#004466' },
+            { name: 'Aurora', class: 'theme-aurora', textColor: '#ffffff', textSecondary: 'rgba(255,255,255,0.7)', gradient1: '#0a3a52', gradient2: '#16e0bd' },
+            { name: 'Sunset', class: 'theme-sunset', textColor: '#000000', textSecondary: 'rgba(0,0,0,0.6)', gradient1: '#ff6b35', gradient2: '#ffa500' },
+            { name: 'Purple Space', class: 'theme-purple-space', textColor: '#ffffff', textSecondary: 'rgba(255,255,255,0.7)', gradient1: '#2d1b69', gradient2: '#8f39fc' },
+            { name: 'Snow', class: 'theme-snow', textColor: '#000000', textSecondary: 'rgba(0,0,0,0.6)', gradient1: '#f5f5f5', gradient2: '#ffffff' },
+            { name: 'Forest', class: 'theme-forest', textColor: '#ffffff', textSecondary: 'rgba(255,255,255,0.7)', gradient1: '#1b4332', gradient2: '#52b788' },
+            { name: 'Ember', class: 'theme-ember', textColor: '#ffffff', textSecondary: 'rgba(255,255,255,0.7)', gradient1: '#6a040f', gradient2: '#ff006e' },
+            { name: 'Gold', class: 'theme-gold', textColor: '#000000', textSecondary: 'rgba(0,0,0,0.6)', gradient1: '#8b7500', gradient2: '#ffd700' },
+            { name: 'Monochrome', class: 'theme-monochrome', textColor: '#ffffff', textSecondary: 'rgba(255,255,255,0.7)', gradient1: '#000000', gradient2: '#ffffff' }
         ];
 
         const FONTS = [
@@ -749,7 +758,7 @@
             group.innerHTML = THEMES.map(theme => 
                 `<div class="theme-preview ${theme.class} ${state.theme === theme.name ? 'active' : ''}" 
                      data-theme="${theme.name}" 
-                     title="${theme.name}"></div>`
+                     title="${theme.name}">Aa</div>`
             ).join('');
             
             group.querySelectorAll('.theme-preview').forEach(el => {
@@ -775,16 +784,18 @@
             state.theme = themeName;
             const theme = THEMES.find(t => t.name === themeName);
             
-            document.documentElement.style.setProperty('--bg-primary', theme.colors.primary === '#ffffff' ? '#ffffff' : '#000000');
-            document.documentElement.style.setProperty('--text-primary', theme.colors.primary);
-            document.documentElement.style.setProperty('--text-secondary', theme.colors.secondary);
-            document.documentElement.style.setProperty('--accent', theme.colors.primary);
+            document.documentElement.style.setProperty('--bg-primary', theme.gradient1);
+            document.documentElement.style.setProperty('--text-primary', theme.textColor);
+            document.documentElement.style.setProperty('--text-secondary', theme.textSecondary);
+            document.documentElement.style.setProperty('--accent', theme.textColor);
+            document.documentElement.style.setProperty('--gradient-1', theme.gradient1);
+            document.documentElement.style.setProperty('--gradient-2', theme.gradient2);
             
             document.querySelectorAll('.theme-preview').forEach(el => {
                 el.classList.toggle('active', el.dataset.theme === themeName);
             });
             
-            applyThemeGradient();
+            applyThemeBackground();
             saveSettings();
         }
 
@@ -801,27 +812,16 @@
             saveSettings();
         }
 
-        function applyThemeGradient() {
-            const theme = THEMES.find(t => t.name === state.theme);
-            if (!theme) return;
-
-            const gradientClass = theme.class;
-            const gradients = {
-                'theme-midnight': { from: '#0f0f1e', to: '#1a1a3e' },
-                'theme-ocean': { from: '#001a33', to: '#004466' },
-                'theme-aurora': { from: '#0a3a52', to: '#16e0bd' },
-                'theme-sunset': { from: '#ff6b35', to: '#ffa500' },
-                'theme-purple-space': { from: '#2d1b69', to: '#8f39fc' },
-                'theme-snow': { from: '#f5f5f5', to: '#ffffff' },
-                'theme-forest': { from: '#1b4332', to: '#52b788' },
-                'theme-ember': { from: '#6a040f', to: '#ff006e' },
-                'theme-gold': { from: '#8b7500', to: '#ffd700' },
-                'theme-monochrome': { from: '#000000', to: '#ffffff' }
-            };
-
-            const gradient = gradients[gradientClass] || { from: '#ffffff', to: '#ffffff' };
-            document.documentElement.style.setProperty('--gradient-1', gradient.from);
-            document.documentElement.style.setProperty('--gradient-2', gradient.to);
+        function applyThemeBackground() {
+            const body = document.body;
+            body.classList.remove('gradient-on', 'gradient-diagonal', 'gradient-radial', 'gradient-movement-off');
+            
+            if (state.gradientOn) {
+                body.classList.add('gradient-on', `gradient-${state.gradientStyle}`);
+                if (!state.gradientMovement) {
+                    body.classList.add('gradient-movement-off');
+                }
+            }
         }
 
         function setupEventListeners() {
@@ -839,14 +839,14 @@
             gradientToggle.addEventListener('click', () => {
                 state.gradientOn = !state.gradientOn;
                 updateGradientToggle();
-                applySettings();
+                applyThemeBackground();
                 saveSettings();
             });
 
             gradientMovementToggle.addEventListener('click', () => {
                 state.gradientMovement = !state.gradientMovement;
                 updateGradientMovementToggle();
-                applySettings();
+                applyThemeBackground();
                 saveSettings();
             });
 
@@ -855,7 +855,7 @@
                     document.querySelectorAll('.gradient-option').forEach(b => b.classList.remove('active'));
                     btn.classList.add('active');
                     state.gradientStyle = btn.dataset.gradient;
-                    applySettings();
+                    applyThemeBackground();
                     saveSettings();
                 });
             });
@@ -984,16 +984,8 @@
             // Apply font
             selectFont(state.font);
 
-            // Apply gradient
-            const body = document.body;
-            body.classList.remove('gradient-on', 'gradient-diagonal', 'gradient-radial', 'gradient-movement-off');
-            
-            if (state.gradientOn) {
-                body.classList.add('gradient-on', `gradient-${state.gradientStyle}`);
-                if (!state.gradientMovement) {
-                    body.classList.add('gradient-movement-off');
-                }
-            }
+            // Apply background
+            applyThemeBackground();
 
             // Apply toggles
             updateSecondsToggle();
