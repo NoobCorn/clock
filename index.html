@@ -98,15 +98,22 @@
             justify-content: space-between;
             align-items: flex-start;
             padding: 3vmin;
-            opacity: 0;
+            opacity: 1;
             pointer-events: none;
-            transition: opacity 0.3s ease;
+            transition: opacity 0.5s ease;
             z-index: 50;
         }
 
-        .controls.visible {
-            opacity: 1;
-            pointer-events: all;
+        /* Only the buttons inside the overlay should catch clicks, so the
+           full-screen container doesn't block the on-screen timer/stopwatch
+           controls beneath it. */
+        .controls > * {
+            pointer-events: auto;
+        }
+
+        /* Dim only the controls after inactivity, never the time */
+        .dimmed {
+            opacity: 0.12 !important;
         }
 
         .settings-btn {
@@ -138,6 +145,94 @@
             display: flex;
             gap: 15px;
             z-index: 50;
+            transition: opacity 0.5s ease;
+        }
+
+        /* On-screen timer/stopwatch action buttons (moved out of settings) */
+        .mode-actions {
+            display: none;
+            gap: 12px;
+            justify-content: center;
+            margin-top: 4vmin;
+            transition: opacity 0.5s ease;
+        }
+
+        .mode-actions.active {
+            display: flex;
+        }
+
+        .mode-actions .btn {
+            flex: 0 0 auto;
+            min-width: 120px;
+            padding: 14px 22px;
+            font-size: 16px;
+            backdrop-filter: blur(10px);
+        }
+
+        /* Custom color picker */
+        .theme-custom {
+            background: linear-gradient(135deg, #ff6b6b 0%, #feca57 35%, #48dbfb 70%, #ff9ff3 100%);
+            color: #ffffff;
+            font-size: 24px;
+        }
+
+        .custom-colors {
+            display: none;
+            margin-top: 14px;
+            padding: 14px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .custom-colors.active {
+            display: block;
+        }
+
+        .color-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .color-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .color-row label {
+            color: var(--text-primary);
+            font-size: 14px;
+        }
+
+        .color-row input[type="color"] {
+            width: 52px;
+            height: 34px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            background: none;
+            cursor: pointer;
+            padding: 2px;
+        }
+
+        /* Timer editing (Google-style) */
+        .time.editing {
+            cursor: text;
+            border-radius: 12px;
+            transition: opacity 0.2s ease;
+        }
+
+        .timer-hint {
+            font-size: 1.3vw;
+            color: var(--text-secondary);
+            margin-top: 2vw;
+            letter-spacing: 0.05em;
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .timer-hint { font-size: 3.5vw; }
+            .mode-actions .btn { min-width: 90px; padding: 12px 14px; font-size: 14px; }
         }
 
         .mode-btn {
@@ -514,9 +609,7 @@
         .font-raleway { font-family: 'Raleway', sans-serif; }
         .font-lora { font-family: 'Lora', serif; }
 
-        .dim {
-            opacity: 0.5;
-        }
+
     </style>
 
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Orbitron:wght@400;700&family=Roboto+Mono:wght@400;700&family=Space+Mono:wght@400;700&family=Playfair+Display:wght@400;700&family=Poppins:wght@400;600&family=Montserrat:wght@400;600&family=Raleway:wght@400;600&family=Lora:wght@400;600&display=swap" rel="stylesheet">
@@ -524,8 +617,19 @@
 <body>
     <div class="container">
         <div class="clock-display">
-            <p class="time" id="time">00:00:00</p>
+            <p class="time" id="time" tabindex="0">00:00:00</p>
             <p class="date" id="date"></p>
+            <p class="timer-hint" id="timerHint">Type numbers to set the timer &bull; Enter to start</p>
+            <div class="mode-actions" id="timerActions">
+                <button class="btn primary" id="timerStart">Start</button>
+                <button class="btn" id="timerPause">Pause</button>
+                <button class="btn" id="timerReset">Reset</button>
+            </div>
+            <div class="mode-actions" id="stopwatchActions">
+                <button class="btn primary" id="stopwatchStart">Start</button>
+                <button class="btn" id="stopwatchPause">Pause</button>
+                <button class="btn" id="stopwatchReset">Reset</button>
+            </div>
         </div>
     </div>
 
@@ -551,6 +655,24 @@
             <h3>Theme</h3>
             <div class="settings-group" id="themeGroup">
                 <!-- Generated by JS -->
+            </div>
+            <div class="custom-colors" id="customColors">
+                <div class="color-row">
+                    <label>Background</label>
+                    <input type="color" id="customBg1" value="#1a1a2e">
+                </div>
+                <div class="color-row">
+                    <label>Gradient / Second color</label>
+                    <input type="color" id="customBg2" value="#16213e">
+                </div>
+                <div class="color-row">
+                    <label>Accent</label>
+                    <input type="color" id="customAccent" value="#e94560">
+                </div>
+                <div class="color-row">
+                    <label>Text</label>
+                    <input type="color" id="customText" value="#ffffff">
+                </div>
             </div>
         </div>
 
@@ -616,35 +738,6 @@
             </div>
         </div>
 
-        <!-- Timer Mode -->
-        <div class="settings-section mode-content" id="timerSettings">
-            <h3>Timer</h3>
-            <div class="timer-input">
-                <div class="time-input-group">
-                    <label>Minutes</label>
-                    <input type="number" id="timerMinutes" min="0" max="59" value="5">
-                </div>
-                <div class="time-input-group">
-                    <label>Seconds</label>
-                    <input type="number" id="timerSeconds" min="0" max="59" value="0">
-                </div>
-            </div>
-            <div class="button-group">
-                <button class="btn primary" id="timerStart">Start</button>
-                <button class="btn" id="timerPause">Pause</button>
-                <button class="btn" id="timerReset">Reset</button>
-            </div>
-        </div>
-
-        <!-- Stopwatch Mode -->
-        <div class="settings-section mode-content" id="stopwatchSettings">
-            <h3>Stopwatch</h3>
-            <div class="button-group">
-                <button class="btn primary" id="stopwatchStart">Start</button>
-                <button class="btn" id="stopwatchPause">Pause</button>
-                <button class="btn" id="stopwatchReset">Reset</button>
-            </div>
-        </div>
     </div>
 
     <script>
@@ -686,10 +779,16 @@
             gradientOn: false,
             gradientMovement: false,
             gradientStyle: 'linear',
+            customTheme: { gradient1: '#1a1a2e', gradient2: '#16213e', accent: '#e94560', textColor: '#ffffff' },
+            // Timer (timestamp based for accuracy)
             timerRunning: false,
-            timerTime: 0,
+            timerRemaining: 0,      // ms remaining while paused
+            timerEndTime: 0,        // performance.now() target while running
+            timerInputDigits: '',   // Google-style typed digits (HHMMSS)
+            // Stopwatch (timestamp based for accuracy)
             stopwatchRunning: false,
-            stopwatchTime: 0,
+            stopwatchElapsed: 0,    // accumulated ms while paused
+            stopwatchStartTime: 0,  // performance.now() when started
             controlsVisible: false,
             inactivityTimer: null
         };
@@ -709,8 +808,14 @@
         const dateToggle = document.getElementById('dateToggle');
         const timeFormatSelect = document.getElementById('timeFormatSelect');
         const timezoneSelect = document.getElementById('timezoneSelect');
-        const timerMinutes = document.getElementById('timerMinutes');
-        const timerSeconds = document.getElementById('timerSeconds');
+        const timerHint = document.getElementById('timerHint');
+        const timerActions = document.getElementById('timerActions');
+        const stopwatchActions = document.getElementById('stopwatchActions');
+        const customColors = document.getElementById('customColors');
+        const customBg1 = document.getElementById('customBg1');
+        const customBg2 = document.getElementById('customBg2');
+        const customAccent = document.getElementById('customAccent');
+        const customText = document.getElementById('customText');
         const timerStartBtn = document.getElementById('timerStart');
         const timerPauseBtn = document.getElementById('timerPause');
         const timerResetBtn = document.getElementById('timerReset');
@@ -724,9 +829,14 @@
             renderThemes();
             renderFonts();
             setupEventListeners();
-            updateClock();
-            setInterval(updateClock, 100);
             applySettings();
+            showControls();
+            requestAnimationFrame(tick);
+        }
+
+        function tick() {
+            updateClock();
+            requestAnimationFrame(tick);
         }
 
         function loadSettings() {
@@ -748,6 +858,7 @@
                 gradientOn: state.gradientOn,
                 gradientMovement: state.gradientMovement,
                 gradientStyle: state.gradientStyle,
+                customTheme: state.customTheme,
                 mode: state.mode
             };
             localStorage.setItem('clockSettings', JSON.stringify(toSave));
@@ -755,14 +866,30 @@
 
         function renderThemes() {
             const group = document.getElementById('themeGroup');
-            group.innerHTML = THEMES.map(theme => 
+            let html = THEMES.map(theme => 
                 `<div class="theme-preview ${theme.class} ${state.theme === theme.name ? 'active' : ''}" 
                      data-theme="${theme.name}" 
                      title="${theme.name}">Aa</div>`
             ).join('');
+            html += `<div class="theme-preview theme-custom ${state.theme === 'Custom' ? 'active' : ''}" data-theme="Custom" title="Custom">&#43;</div>`;
+            group.innerHTML = html;
             
             group.querySelectorAll('.theme-preview').forEach(el => {
                 el.addEventListener('click', () => selectTheme(el.dataset.theme));
+            });
+        }
+
+        function hexToRgba(hex, alpha) {
+            const h = hex.replace('#', '');
+            const r = parseInt(h.substring(0, 2), 16);
+            const g = parseInt(h.substring(2, 4), 16);
+            const b = parseInt(h.substring(4, 6), 16);
+            return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+        }
+
+        function updateThemeActive() {
+            document.querySelectorAll('.theme-preview').forEach(el => {
+                el.classList.toggle('active', el.dataset.theme === state.theme);
             });
         }
 
@@ -782,21 +909,38 @@
 
         function selectTheme(themeName) {
             state.theme = themeName;
-            const theme = THEMES.find(t => t.name === themeName);
-            
-            document.documentElement.style.setProperty('--bg-primary', theme.gradient1);
-            document.documentElement.style.setProperty('--text-primary', theme.textColor);
-            document.documentElement.style.setProperty('--text-secondary', theme.textSecondary);
-            document.documentElement.style.setProperty('--accent', theme.textColor);
-            document.documentElement.style.setProperty('--gradient-1', theme.gradient1);
-            document.documentElement.style.setProperty('--gradient-2', theme.gradient2);
-            
-            document.querySelectorAll('.theme-preview').forEach(el => {
-                el.classList.toggle('active', el.dataset.theme === themeName);
-            });
-            
+
+            if (themeName === 'Custom') {
+                applyCustomTheme();
+                customColors.classList.add('active');
+            } else {
+                const theme = THEMES.find(t => t.name === themeName) || THEMES[0];
+                document.documentElement.style.setProperty('--bg-primary', theme.gradient1);
+                document.documentElement.style.setProperty('--text-primary', theme.textColor);
+                document.documentElement.style.setProperty('--text-secondary', theme.textSecondary);
+                document.documentElement.style.setProperty('--accent', theme.textColor);
+                document.documentElement.style.setProperty('--gradient-1', theme.gradient1);
+                document.documentElement.style.setProperty('--gradient-2', theme.gradient2);
+                customColors.classList.remove('active');
+            }
+
+            updateThemeActive();
             applyThemeBackground();
             saveSettings();
+        }
+
+        function applyCustomTheme() {
+            const c = state.customTheme;
+            document.documentElement.style.setProperty('--bg-primary', c.gradient1);
+            document.documentElement.style.setProperty('--text-primary', c.textColor);
+            document.documentElement.style.setProperty('--text-secondary', hexToRgba(c.textColor, 0.7));
+            document.documentElement.style.setProperty('--accent', c.accent);
+            document.documentElement.style.setProperty('--gradient-1', c.gradient1);
+            document.documentElement.style.setProperty('--gradient-2', c.gradient2);
+            customBg1.value = c.gradient1;
+            customBg2.value = c.gradient2;
+            customAccent.value = c.accent;
+            customText.value = c.textColor;
         }
 
         function selectFont(fontName) {
@@ -883,6 +1027,25 @@
                 saveSettings();
             });
 
+            // Custom colors
+            const customInputs = [
+                [customBg1, 'gradient1'],
+                [customBg2, 'gradient2'],
+                [customAccent, 'accent'],
+                [customText, 'textColor']
+            ];
+            customInputs.forEach(([input, key]) => {
+                input.addEventListener('input', () => {
+                    state.customTheme[key] = input.value;
+                    state.theme = 'Custom';
+                    applyCustomTheme();
+                    customColors.classList.add('active');
+                    updateThemeActive();
+                    applyThemeBackground();
+                    saveSettings();
+                });
+            });
+
             // Mode controls
             document.querySelectorAll('.mode-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
@@ -901,13 +1064,46 @@
             stopwatchPauseBtn.addEventListener('click', pauseStopwatch);
             stopwatchResetBtn.addEventListener('click', resetStopwatch);
 
-            // Mouse activity
-            document.addEventListener('mousemove', showControls);
-            document.addEventListener('click', (e) => {
-                if (!settingsPanel.contains(e.target) && !settingsBtn.contains(e.target)) {
-                    // Clicked outside settings
-                }
+            // Google-style timer input: type digits directly onto the display
+            document.addEventListener('keydown', handleTimerKeydown);
+            timeDisplay.addEventListener('click', () => {
+                if (isTimerEditing()) timeDisplay.focus();
+                showControls();
             });
+
+            // Mouse activity dims/undims only the controls
+            document.addEventListener('mousemove', showControls);
+        }
+
+        function isTimerEditing() {
+            return state.mode === 'timer' && !state.timerRunning && getTimerRemaining() === 0;
+        }
+
+        function handleTimerKeydown(e) {
+            if (state.mode !== 'timer' || state.timerRunning) return;
+            if (settingsPanel.classList.contains('open')) return;
+            if (getTimerRemaining() > 0) {
+                // Paused with time left: Enter resumes, Escape/Backspace resets to edit
+                if (e.key === 'Enter') { startTimer(); e.preventDefault(); }
+                return;
+            }
+            if (e.key >= '0' && e.key <= '9') {
+                const trimmed = state.timerInputDigits.replace(/^0+/, '');
+                if (trimmed.length < 6) {
+                    state.timerInputDigits = (state.timerInputDigits + e.key).replace(/^0+/, '').slice(-6);
+                }
+                showControls();
+                e.preventDefault();
+            } else if (e.key === 'Backspace') {
+                state.timerInputDigits = state.timerInputDigits.slice(0, -1);
+                e.preventDefault();
+            } else if (e.key === 'Enter') {
+                startTimer();
+                e.preventDefault();
+            } else if (e.key === 'Escape') {
+                state.timerInputDigits = '';
+                e.preventDefault();
+            }
         }
 
         function selectMode(mode) {
@@ -917,29 +1113,28 @@
                 btn.classList.toggle('active', btn.dataset.mode === mode);
             });
 
-            document.querySelectorAll('.mode-content').forEach(el => {
-                el.classList.remove('active');
-            });
+            timerActions.classList.toggle('active', mode === 'timer');
+            stopwatchActions.classList.toggle('active', mode === 'stopwatch');
 
-            if (mode === 'timer') {
-                document.getElementById('timerSettings').classList.add('active');
-            } else if (mode === 'stopwatch') {
-                document.getElementById('stopwatchSettings').classList.add('active');
-            }
-
+            updateTimerHint();
             saveSettings();
+            updateClock();
+        }
+
+        function updateTimerHint() {
+            const editing = isTimerEditing();
+            timerHint.style.display = editing ? 'block' : 'none';
+            timeDisplay.classList.toggle('editing', editing);
         }
 
         function showControls() {
-            controls.classList.add('visible');
-            modeControls.classList.add('visible');
-            document.body.classList.remove('dim');
+            const dimTargets = [controls, modeControls, timerActions, stopwatchActions];
+            dimTargets.forEach(el => el.classList.remove('dimmed'));
             clearTimeout(state.inactivityTimer);
 
             state.inactivityTimer = setTimeout(() => {
-                controls.classList.remove('visible');
-                modeControls.classList.remove('visible');
-                document.body.classList.add('dim');
+                // Dim only the controls, never the time
+                dimTargets.forEach(el => el.classList.add('dimmed'));
             }, 5000);
         }
 
@@ -996,6 +1191,9 @@
             // Apply selects
             timeFormatSelect.value = state.timeFormat;
             timezoneSelect.value = state.timezone;
+
+            // Apply mode (shows on-screen timer/stopwatch controls)
+            selectMode(state.mode);
         }
 
         function updateClock() {
@@ -1043,25 +1241,93 @@
             }
         }
 
+        function digitsToHMS(digits) {
+            const p = String(digits).padStart(6, '0').slice(-6);
+            return {
+                h: parseInt(p.slice(0, 2), 10),
+                m: parseInt(p.slice(2, 4), 10),
+                s: parseInt(p.slice(4, 6), 10)
+            };
+        }
+
+        function digitsToSeconds(digits) {
+            const { h, m, s } = digitsToHMS(digits);
+            return h * 3600 + m * 60 + s;
+        }
+
+        function formatHMS(h, m, s) {
+            return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+        }
+
+        function getTimerRemaining() {
+            if (state.timerRunning) return Math.max(0, state.timerEndTime - performance.now());
+            return state.timerRemaining;
+        }
+
         function displayTimer() {
-            const minutes = Math.floor(state.timerTime / 60);
-            const seconds = state.timerTime % 60;
-            const timeStr = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            if (isTimerEditing()) {
+                const { h, m, s } = digitsToHMS(state.timerInputDigits);
+                timeDisplay.textContent = formatHMS(h, m, s);
+                dateDisplay.textContent = '';
+                updateTabTitle('Set Timer');
+                return;
+            }
+
+            const remaining = getTimerRemaining();
+            const totalSec = Math.ceil(remaining / 1000);
+            const h = Math.floor(totalSec / 3600);
+            const m = Math.floor((totalSec % 3600) / 60);
+            const s = totalSec % 60;
+            const timeStr = formatHMS(h, m, s);
             timeDisplay.textContent = timeStr;
             dateDisplay.textContent = '';
-            updateTabTitle(`Timer ${timeStr}`);
 
-            if (state.timerTime === 0 && state.timerRunning) {
-                pauseTimer();
-                document.title = '✓ Timer Complete';
+            if (state.timerRunning && remaining <= 0) {
+                state.timerRunning = false;
+                state.timerRemaining = 0;
+                updateTabTitle('\u2713 Timer Complete');
+                onTimerComplete();
+                updateTimerHint();
+            } else {
+                updateTabTitle(`Timer ${timeStr}`);
             }
         }
 
+        function onTimerComplete() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const now = ctx.currentTime;
+                [0, 0.5, 1].forEach(offset => {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.type = 'sine';
+                    osc.frequency.value = 880;
+                    gain.gain.setValueAtTime(0.0001, now + offset);
+                    gain.gain.exponentialRampToValueAtTime(0.3, now + offset + 0.02);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, now + offset + 0.4);
+                    osc.start(now + offset);
+                    osc.stop(now + offset + 0.4);
+                });
+            } catch (e) { /* audio not available */ }
+        }
+
+        function getStopwatchElapsed() {
+            return state.stopwatchElapsed + (state.stopwatchRunning ? (performance.now() - state.stopwatchStartTime) : 0);
+        }
+
         function displayStopwatch() {
-            const minutes = Math.floor(state.stopwatchTime / 6000);
-            const seconds = Math.floor((state.stopwatchTime % 6000) / 100);
-            const centiseconds = state.stopwatchTime % 100;
-            const timeStr = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}.${String(centiseconds).padStart(2, '0')}`;
+            const ms = getStopwatchElapsed();
+            const centiseconds = Math.floor(ms / 10) % 100;
+            const totalSec = Math.floor(ms / 1000);
+            const seconds = totalSec % 60;
+            const minutes = Math.floor(totalSec / 60) % 60;
+            const hours = Math.floor(totalSec / 3600);
+            let timeStr = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}.${String(centiseconds).padStart(2, '0')}`;
+            if (hours > 0) {
+                timeStr = `${String(hours).padStart(2, '0')}:${timeStr}`;
+            }
             timeDisplay.textContent = timeStr;
             dateDisplay.textContent = '';
             updateTabTitle(timeStr);
@@ -1072,56 +1338,47 @@
         }
 
         function startTimer() {
-            if (!state.timerRunning) {
-                state.timerRunning = true;
-                const mins = parseInt(timerMinutes.value) || 0;
-                const secs = parseInt(timerSeconds.value) || 0;
-                state.timerTime = mins * 60 + secs;
-
-                const interval = setInterval(() => {
-                    if (state.timerRunning) {
-                        state.timerTime--;
-                        if (state.timerTime < 0) {
-                            state.timerTime = 0;
-                            pauseTimer();
-                        }
-                    } else {
-                        clearInterval(interval);
-                    }
-                }, 1000);
+            if (state.timerRunning) return;
+            let remaining = getTimerRemaining();
+            if (remaining <= 0) {
+                const secs = digitsToSeconds(state.timerInputDigits);
+                if (secs <= 0) return;
+                remaining = secs * 1000;
             }
+            state.timerRunning = true;
+            state.timerEndTime = performance.now() + remaining;
+            updateTimerHint();
         }
 
         function pauseTimer() {
+            if (!state.timerRunning) return;
+            state.timerRemaining = getTimerRemaining();
             state.timerRunning = false;
+            updateTimerHint();
         }
 
         function resetTimer() {
             state.timerRunning = false;
-            state.timerTime = 0;
+            state.timerRemaining = 0;
+            updateTimerHint();
             updateClock();
         }
 
         function startStopwatch() {
-            if (!state.stopwatchRunning) {
-                state.stopwatchRunning = true;
-                const interval = setInterval(() => {
-                    if (state.stopwatchRunning) {
-                        state.stopwatchTime++;
-                    } else {
-                        clearInterval(interval);
-                    }
-                }, 10);
-            }
+            if (state.stopwatchRunning) return;
+            state.stopwatchRunning = true;
+            state.stopwatchStartTime = performance.now();
         }
 
         function pauseStopwatch() {
+            if (!state.stopwatchRunning) return;
+            state.stopwatchElapsed = getStopwatchElapsed();
             state.stopwatchRunning = false;
         }
 
         function resetStopwatch() {
             state.stopwatchRunning = false;
-            state.stopwatchTime = 0;
+            state.stopwatchElapsed = 0;
             updateClock();
         }
 
