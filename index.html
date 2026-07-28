@@ -468,25 +468,26 @@
             flex-direction: column;
             align-items: center;
             width: max-content;
+            transition: transform 0.2s ease;
         }
 
         .timer-units {
             display: flex;
             align-items: center;
-            gap: clamp(6px, 0.8vw, 14px);
+            gap: clamp(2px, 0.4vw, 8px);
         }
 
         .timer-unit {
             display: flex;
             align-items: center;
-            gap: clamp(2px, 0.3vw, 6px);
+            gap: clamp(1px, 0.2vw, 4px);
         }
 
         .unit-col {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: clamp(6px, 0.6vw, 10px);
+            gap: clamp(4px, 0.4vw, 8px);
         }
 
         .unit-value {
@@ -530,8 +531,8 @@
             color: var(--text-secondary);
             font-size: clamp(18px, 1.8vw, 24px);
             cursor: pointer;
-            width: clamp(30px, 2.4vw, 40px);
-            height: clamp(30px, 2.4vw, 40px);
+            width: clamp(26px, 2vw, 34px);
+            height: clamp(26px, 2vw, 34px);
             flex-shrink: 0;
             display: flex;
             align-items: center;
@@ -555,8 +556,8 @@
         .timer-colon {
             display: flex;
             flex-direction: column;
-            gap: clamp(4px, 0.5vw, 8px);
-            padding-bottom: clamp(16px, 1.6vw, 22px);
+            gap: clamp(3px, 0.4vw, 6px);
+            padding-bottom: clamp(12px, 1.2vw, 18px);
         }
 
         .timer-colon span {
@@ -879,12 +880,16 @@
             margin-top: 2px;
         }
 
-        .task-due.urgent-high {
+        .task-due.tier-red {
             color: #fb7185;
         }
 
-        .task-due.urgent-medium {
+        .task-due.tier-orange {
             color: #fbbf24;
+        }
+
+        .task-due.tier-green {
+            color: #34d399;
         }
 
         .task-card.completed .task-due {
@@ -905,8 +910,45 @@
             color: #fb7185;
         }
 
-        .task-side-icon.flag-medium {
-            color: #fbbf24;
+        .task-delete-btn {
+            flex-shrink: 0;
+            width: 22px;
+            height: 22px;
+            border: none;
+            background: none;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: rgba(255, 255, 255, 0.3);
+            cursor: pointer;
+            transition: color 0.15s ease;
+        }
+
+        .task-delete-btn:hover {
+            color: #fb7185;
+        }
+
+        .task-card.delete-confirm {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 10px;
+            background: rgba(239, 68, 68, 0.1);
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+
+        .task-delete-confirm-text {
+            font-size: 13.5px;
+            color: rgba(255, 255, 255, 0.85);
+        }
+
+        .task-delete-confirm-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .task-delete-confirm-actions .time-step-btn {
+            flex: 1;
         }
 
         .todo-footer {
@@ -973,6 +1015,17 @@
             display: flex;
             flex-direction: column;
             gap: 10px;
+        }
+
+        .field-error {
+            display: none;
+            font-size: 12px;
+            color: #fb7185;
+            margin-top: -2px;
+        }
+
+        .field-error.show {
+            display: block;
         }
 
         .add-task-time-label {
@@ -1384,6 +1437,7 @@
                         <button class="time-step-btn skip" id="skipDateBtn">Skip</button>
                         <button class="time-step-btn set" id="nextDateBtn">Next</button>
                     </div>
+                    <div class="field-error" id="dateFieldError">That date has already passed.</div>
                 </div>
                 <div class="add-task-time-step-inner" id="timeSubStep" style="display: none;">
                     <div class="add-task-time-label">What time is it due?</div>
@@ -1392,6 +1446,7 @@
                         <button class="time-step-btn skip" id="skipTimeBtn">Skip</button>
                         <button class="time-step-btn set" id="setTaskTimeBtn">Set</button>
                     </div>
+                    <div class="field-error" id="timeFieldError">That time has already passed today.</div>
                 </div>
             </div>
             <button class="clear-tasks-btn" id="clearTasksBtn">Clear all tasks</button>
@@ -1497,6 +1552,8 @@
         const addTaskTimeStep = document.getElementById('addTaskTimeStep');
         const dateSubStep = document.getElementById('dateSubStep');
         const timeSubStep = document.getElementById('timeSubStep');
+        const dateFieldError = document.getElementById('dateFieldError');
+        const timeFieldError = document.getElementById('timeFieldError');
         const newTaskDateInput = document.getElementById('newTaskDateInput');
         const newTaskTimeInput = document.getElementById('newTaskTimeInput');
         const skipDateBtn = document.getElementById('skipDateBtn');
@@ -1792,11 +1849,13 @@
             newTaskDateInput.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter') goToTimeStep();
             });
+            newTaskDateInput.addEventListener('input', () => dateFieldError.classList.remove('show'));
             skipTimeBtn.addEventListener('click', skipDueTime);
             setTaskTimeBtn.addEventListener('click', setDueTime);
             newTaskTimeInput.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter') setDueTime();
             });
+            newTaskTimeInput.addEventListener('input', () => timeFieldError.classList.remove('show'));
 
             clearTasksBtn.addEventListener('click', () => {
                 clearTasksBtn.classList.add('hidden');
@@ -1956,21 +2015,39 @@
 
         const RING_RADIUS = 140;
         const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
+        const RING_CONTENT_RATIO = 0.9; // fraction of the ring's diameter the digits are allowed to use, leaving clear space before the ring line
 
         function sizeTimerRing() {
             const col = document.querySelector('.timer-units-col');
             const wrap = document.querySelector('.timer-ring-wrap');
             if (!col || !wrap) return;
-            const rect = col.getBoundingClientRect();
-            if (rect.width === 0 || rect.height === 0) return;
-            const diagonal = Math.sqrt(rect.width * rect.width + rect.height * rect.height);
-            const padding = 55;
-            let diameter = diagonal + padding;
-            const maxAllowed = Math.min(window.innerWidth * 0.75, window.innerHeight * 0.62);
-            diameter = Math.min(diameter, maxAllowed, 440);
-            diameter = Math.max(diameter, 220);
+
+            // Disable the transition and reset scale, then force a reflow so we measure
+            // the digits' true natural size instead of a mid-transition (stale) size
+            const prevTransition = col.style.transition;
+            col.style.transition = 'none';
+            col.style.transform = 'scale(1)';
+            void col.offsetWidth; // forces the browser to apply the above before we measure
+
+            const maxAllowed = Math.min(window.innerWidth * 0.8, window.innerHeight * 0.68);
+            const diameter = Math.min(Math.max(maxAllowed, 220), 460);
             wrap.style.width = diameter + 'px';
             wrap.style.height = diameter + 'px';
+
+            const rect = col.getBoundingClientRect();
+            if (rect.width === 0 || rect.height === 0) {
+                col.style.transition = prevTransition;
+                return;
+            }
+            const diagonal = Math.sqrt(rect.width * rect.width + rect.height * rect.height);
+            const budget = diameter * RING_CONTENT_RATIO;
+
+            // Only ever shrink (never enlarge) the digits so they always stay fully inside the ring
+            const scale = diagonal > budget ? budget / diagonal : 1;
+
+            // Restore the transition, then apply the real target scale so it animates smoothly
+            col.style.transition = prevTransition;
+            col.style.transform = `scale(${scale})`;
         }
 
         let ringResizeTimeout = null;
@@ -2103,23 +2180,48 @@
         const CHECK_SVG = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
         const FLAG_SVG = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M5 3v18h1.5v-6.5h9.7l-1.4-3.25L16.2 8H6.5V3H5z"/></svg>';
         const HANDLE_SVG = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="7" x2="20" y2="7"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="17" x2="20" y2="17"></line></svg>';
+        const TRASH_SVG = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"></path></svg>';
+
+        let pendingDeleteId = null;
 
         function isOverdue(task) {
             return !task.completed && task.due && new Date(task.due).getTime() < Date.now();
         }
 
-        function formatDueTime(dueISO) {
-            return new Date(dueISO).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+        // Shows just the time if the due date is today, otherwise a short weekday + time
+        function formatDueLabel(dueISO) {
+            const due = new Date(dueISO);
+            const timeStr = due.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+            if (due.toDateString() === new Date().toDateString()) {
+                return timeStr;
+            }
+            const dateStr = due.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+            return `${dateStr}, ${timeStr}`;
         }
 
-        function taskCardHTML(task) {
+        function taskCardHTML(task, tier) {
+            if (task.id === pendingDeleteId) {
+                return `
+                    <div class="task-card delete-confirm" data-id="${task.id}">
+                        <div class="task-delete-confirm-text">Delete "${escapeHTML(task.name)}"? This can't be undone.</div>
+                        <div class="task-delete-confirm-actions">
+                            <button class="time-step-btn skip" data-cancel-delete="${task.id}">Cancel</button>
+                            <button class="time-step-btn danger" data-confirm-delete="${task.id}">Delete</button>
+                        </div>
+                    </div>
+                `;
+            }
+
             const overdue = isOverdue(task);
             let dueLine = '';
             if (task.due) {
-                const timeStr = formatDueTime(task.due);
-                dueLine = overdue
-                    ? `<div class="task-due urgent-high">Overdue &middot; ${timeStr}</div>`
-                    : `<div class="task-due">Due ${timeStr}</div>`;
+                const label = formatDueLabel(task.due);
+                if (overdue) {
+                    dueLine = `<div class="task-due tier-red">Overdue &middot; ${label}</div>`;
+                } else {
+                    const tierClass = tier ? `tier-${tier}` : '';
+                    dueLine = `<div class="task-due ${tierClass}">Due ${label}</div>`;
+                }
             }
             const sideIcon = task.completed
                 ? ''
@@ -2134,6 +2236,7 @@
                         ${dueLine}
                     </div>
                     ${sideIcon}
+                    <button class="task-delete-btn" data-delete-id="${task.id}" aria-label="Delete task">${TRASH_SVG}</button>
                 </div>
             `;
         }
@@ -2144,18 +2247,32 @@
             return div.innerHTML;
         }
 
+        // Ranks non-overdue, due-bearing tasks from soonest to latest and buckets them
+        // into three color tiers: red (soonest), orange (middle), green (latest).
+        function computeDueTiers(dueTasks) {
+            const sorted = [...dueTasks].sort((a, b) => new Date(a.due) - new Date(b.due));
+            const tierMap = {};
+            sorted.forEach((t, idx) => {
+                const pct = sorted.length > 1 ? idx / (sorted.length - 1) : 0;
+                tierMap[t.id] = pct <= 0.34 ? 'red' : (pct <= 0.67 ? 'orange' : 'green');
+            });
+            return tierMap;
+        }
+
         function renderTasks() {
             const active = tasks.filter(t => !t.completed);
             const overdueTasks = active.filter(isOverdue);
             const otherTasks = active.filter(t => !isOverdue(t));
             const completedTasks = tasks.filter(t => t.completed);
 
+            const tierMap = computeDueTiers(otherTasks.filter(t => t.due));
+
             const sections = [];
             if (overdueTasks.length) {
                 sections.push(`
                     <div class="todo-section">
                         <div class="todo-section-label overdue-label">Overdue</div>
-                        ${overdueTasks.map(taskCardHTML).join('')}
+                        ${overdueTasks.map(t => taskCardHTML(t)).join('')}
                     </div>
                 `);
             }
@@ -2163,7 +2280,7 @@
                 sections.push(`
                     <div class="todo-section">
                         <div class="todo-section-label">Tasks</div>
-                        ${otherTasks.map(taskCardHTML).join('')}
+                        ${otherTasks.map(t => taskCardHTML(t, tierMap[t.id])).join('')}
                     </div>
                 `);
             }
@@ -2171,7 +2288,7 @@
                 sections.push(`
                     <div class="todo-section">
                         <div class="todo-section-label">Completed</div>
-                        ${completedTasks.map(taskCardHTML).join('')}
+                        ${completedTasks.map(t => taskCardHTML(t)).join('')}
                     </div>
                 `);
             }
@@ -2182,6 +2299,18 @@
                 btn.addEventListener('click', () => toggleTaskComplete(parseInt(btn.dataset.id, 10)));
             });
 
+            todoBody.querySelectorAll('.task-delete-btn').forEach(btn => {
+                btn.addEventListener('click', () => requestDeleteTask(parseInt(btn.dataset.deleteId, 10)));
+            });
+
+            todoBody.querySelectorAll('[data-cancel-delete]').forEach(btn => {
+                btn.addEventListener('click', cancelDeleteTask);
+            });
+
+            todoBody.querySelectorAll('[data-confirm-delete]').forEach(btn => {
+                btn.addEventListener('click', () => confirmDeleteTask(parseInt(btn.dataset.confirmDelete, 10)));
+            });
+
             updateProgress();
         }
 
@@ -2189,6 +2318,23 @@
             const task = tasks.find(t => t.id === id);
             if (!task) return;
             task.completed = !task.completed;
+            saveTasks();
+            renderTasks();
+        }
+
+        function requestDeleteTask(id) {
+            pendingDeleteId = id;
+            renderTasks();
+        }
+
+        function cancelDeleteTask() {
+            pendingDeleteId = null;
+            renderTasks();
+        }
+
+        function confirmDeleteTask(id) {
+            tasks = tasks.filter(t => t.id !== id);
+            pendingDeleteId = null;
             saveTasks();
             renderTasks();
         }
@@ -2210,10 +2356,20 @@
             showDateSubStep();
         }
 
+        function todayDateInputValue() {
+            const d = new Date();
+            const y = d.getFullYear();
+            const m = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${y}-${m}-${day}`;
+        }
+
         function showDateSubStep() {
             dateSubStep.style.display = 'flex';
             timeSubStep.style.display = 'none';
             newTaskDateInput.value = '';
+            newTaskDateInput.min = todayDateInputValue();
+            dateFieldError.classList.remove('show');
             newTaskDateInput.focus();
         }
 
@@ -2221,6 +2377,13 @@
             dateSubStep.style.display = 'none';
             timeSubStep.style.display = 'flex';
             newTaskTimeInput.value = '';
+            timeFieldError.classList.remove('show');
+            if (pendingDueDateStr === todayDateInputValue()) {
+                const now = new Date();
+                newTaskTimeInput.min = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+            } else {
+                newTaskTimeInput.removeAttribute('min');
+            }
             newTaskTimeInput.focus();
         }
 
@@ -2235,6 +2398,10 @@
                 finalizeNewTask(null, null);
                 return;
             }
+            if (dateVal < todayDateInputValue()) {
+                dateFieldError.classList.add('show');
+                return;
+            }
             pendingDueDateStr = dateVal;
             showTimeSubStep();
         }
@@ -2245,7 +2412,17 @@
         }
 
         function setDueTime() {
-            finalizeNewTask(pendingDueDateStr, newTaskTimeInput.value);
+            const timeVal = newTaskTimeInput.value;
+            if (timeVal && pendingDueDateStr === todayDateInputValue()) {
+                const [hh, mm] = timeVal.split(':').map(Number);
+                const candidate = new Date();
+                candidate.setHours(hh, mm, 0, 0);
+                if (candidate.getTime() < Date.now()) {
+                    timeFieldError.classList.add('show');
+                    return;
+                }
+            }
+            finalizeNewTask(pendingDueDateStr, timeVal);
         }
 
         function resetAddTaskUI() {
