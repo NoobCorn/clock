@@ -211,9 +211,12 @@
             width: 100%;
             max-width: 400px;
             height: 100vh;
-            background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(20px);
+            background: rgba(10, 10, 14, 0.55);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
             border-left: 1px solid rgba(255, 255, 255, 0.1);
+            border-top-left-radius: 20px;
+            border-bottom-left-radius: 20px;
             transform: translateX(100%);
             transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             z-index: 100;
@@ -1198,6 +1201,8 @@
         @media (max-width: 768px) {
             .settings-panel {
                 max-width: 100%;
+                border-top-left-radius: 0;
+                border-bottom-left-radius: 0;
             }
 
             .todo-panel {
@@ -1737,6 +1742,7 @@
             // Settings
             settingsBtn.addEventListener('click', () => {
                 settingsPanel.classList.add('open');
+                todoPanel.classList.remove('open');
                 showControls();
             });
 
@@ -1833,6 +1839,7 @@
             // To-do panel
             tasksBtn.addEventListener('click', () => {
                 todoPanel.classList.add('open');
+                settingsPanel.classList.remove('open');
                 showControls();
             });
 
@@ -1872,8 +1879,12 @@
             // Mouse activity
             document.addEventListener('mousemove', showControls);
             document.addEventListener('click', (e) => {
-                if (!settingsPanel.contains(e.target) && !settingsBtn.contains(e.target)) {
-                    // Clicked outside settings
+                if (
+                    settingsPanel.classList.contains('open') &&
+                    !settingsPanel.contains(e.target) &&
+                    !settingsBtn.contains(e.target)
+                ) {
+                    settingsPanel.classList.remove('open');
                 }
             });
 
@@ -1901,6 +1912,7 @@
 
             if (mode === 'timer') {
                 requestAnimationFrame(sizeTimerRing);
+                if (!state.timerRunning) updateTabTitle('Timer');
             }
 
             saveSettings();
@@ -2140,6 +2152,7 @@
             state.timerRunning = false;
             setPlayIcon(false);
             setTimerControlsDisabled(false);
+            if (state.mode === 'timer') updateTabTitle('Timer');
         }
 
         function resetTimerNew() {
@@ -2148,7 +2161,7 @@
             setTimerControlsDisabled(false);
             setUnitValues(0, 5, 0);
             refreshTimerFromInputs();
-            updateTabTitle('Clock');
+            if (state.mode === 'timer') updateTabTitle('Timer');
         }
 
         function tickTimer() {
