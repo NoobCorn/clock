@@ -108,12 +108,19 @@
             opacity: 1;
         }
 
+        .controls .left-controls,
         .controls .settings-btn {
             pointer-events: none;
         }
 
+        .controls.visible .left-controls,
         .controls.visible .settings-btn {
             pointer-events: auto;
+        }
+
+        .left-controls {
+            display: flex;
+            gap: 10px;
         }
 
         .settings-btn {
@@ -135,6 +142,33 @@
         .settings-btn:hover {
             background: rgba(255, 255, 255, 0.15);
             transform: scale(1.05);
+        }
+
+        .tasks-btn {
+            height: 50px;
+            padding: 0 18px 0 14px;
+            border-radius: 12px;
+            background: var(--bg-secondary);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: var(--text-primary);
+            font-size: 14px;
+            font-weight: 500;
+            font-family: inherit;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            backdrop-filter: blur(10px);
+            transition: all 0.2s ease;
+        }
+
+        .tasks-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: scale(1.05);
+        }
+
+        .tasks-btn svg {
+            flex-shrink: 0;
         }
 
         .mode-controls {
@@ -681,9 +715,442 @@
             display: block;
         }
 
+        /* ===== To-Do Panel ===== */
+        .todo-panel {
+            position: fixed;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            width: 100%;
+            max-width: 380px;
+            height: 100vh;
+            background: rgba(10, 10, 14, 0.55);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border-left: 1px solid rgba(255, 255, 255, 0.1);
+            border-top-left-radius: 20px;
+            border-bottom-left-radius: 20px;
+            transform: translateX(100%);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        .todo-panel.open {
+            transform: translateX(0);
+        }
+
+        .todo-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 28px 24px 20px;
+            flex-shrink: 0;
+        }
+
+        .todo-header h2 {
+            font-size: 22px;
+            color: #ffffff;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+        }
+
+        .todo-close-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.08);
+            border: none;
+            color: rgba(255, 255, 255, 0.85);
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s ease;
+        }
+
+        .todo-close-btn:hover {
+            background: rgba(255, 255, 255, 0.16);
+        }
+
+        .todo-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0 24px;
+        }
+
+        .todo-body::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .todo-body::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 3px;
+        }
+
+        .todo-section {
+            margin-bottom: 22px;
+        }
+
+        .todo-section:empty {
+            display: none;
+        }
+
+        .todo-section-label {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.45);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .task-card {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 14px;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            margin-bottom: 8px;
+            transition: background 0.2s ease;
+        }
+
+        .task-card:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .task-checkbox {
+            width: 22px;
+            height: 22px;
+            border-radius: 6px;
+            border: 1.5px solid rgba(255, 255, 255, 0.3);
+            background: transparent;
+            flex-shrink: 0;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s ease;
+            padding: 0;
+        }
+
+        .task-checkbox svg {
+            opacity: 0;
+            transition: opacity 0.15s ease;
+        }
+
+        .task-checkbox.checked {
+            background: #6366f1;
+            border-color: #6366f1;
+        }
+
+        .task-checkbox.checked svg {
+            opacity: 1;
+        }
+
+        .task-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .task-name {
+            font-size: 14.5px;
+            color: #ffffff;
+            font-weight: 500;
+            line-height: 1.3;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .task-card.completed .task-name {
+            color: rgba(255, 255, 255, 0.4);
+            text-decoration: line-through;
+        }
+
+        .task-due {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.5);
+            margin-top: 2px;
+        }
+
+        .task-due.urgent-high {
+            color: #fb7185;
+        }
+
+        .task-due.urgent-medium {
+            color: #fbbf24;
+        }
+
+        .task-card.completed .task-due {
+            color: rgba(255, 255, 255, 0.3);
+        }
+
+        .task-side-icon {
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 20px;
+            height: 20px;
+            color: rgba(255, 255, 255, 0.35);
+        }
+
+        .task-side-icon.flag-high {
+            color: #fb7185;
+        }
+
+        .task-side-icon.flag-medium {
+            color: #fbbf24;
+        }
+
+        .todo-footer {
+            flex-shrink: 0;
+            padding: 18px 24px 24px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .todo-progress-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 8px;
+        }
+
+        .todo-progress-text {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.75);
+        }
+
+        .todo-progress-pct {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.75);
+            font-weight: 600;
+        }
+
+        .todo-progress-track {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+            margin-bottom: 16px;
+        }
+
+        .todo-progress-fill {
+            height: 100%;
+            border-radius: 3px;
+            background: linear-gradient(90deg, #818cf8, #6366f1);
+            transition: width 0.3s ease;
+        }
+
+        .add-task-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .add-task-row.hidden {
+            display: none;
+        }
+
+        .add-task-time-step {
+            display: none;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .add-task-time-step.active {
+            display: flex;
+        }
+
+        .add-task-time-step-inner {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .add-task-time-label {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.65);
+        }
+
+        .add-task-time-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .add-task-time-input {
+            flex: 1;
+            padding: 12px 14px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.06);
+            color: #ffffff;
+            font-family: inherit;
+            font-size: 14px;
+            color-scheme: dark;
+        }
+
+        .add-task-time-input:focus {
+            outline: none;
+            border-color: #6366f1;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .time-step-btn {
+            padding: 12px 16px;
+            border-radius: 10px;
+            border: none;
+            font-family: inherit;
+            font-size: 13.5px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: filter 0.15s ease, background 0.15s ease;
+            flex-shrink: 0;
+        }
+
+        .time-step-btn.skip {
+            background: rgba(255, 255, 255, 0.08);
+            color: rgba(255, 255, 255, 0.75);
+        }
+
+        .time-step-btn.skip:hover {
+            background: rgba(255, 255, 255, 0.14);
+        }
+
+        .time-step-btn.set {
+            background: #6366f1;
+            color: #ffffff;
+        }
+
+        .time-step-btn.set:hover {
+            filter: brightness(1.1);
+        }
+
+        .time-step-btn.danger {
+            background: #ef4444;
+            color: #ffffff;
+        }
+
+        .time-step-btn.danger:hover {
+            filter: brightness(1.1);
+        }
+
+        .clear-tasks-btn {
+            width: 100%;
+            margin-top: 14px;
+            padding: 10px;
+            border: none;
+            background: none;
+            color: rgba(255, 255, 255, 0.4);
+            font-family: inherit;
+            font-size: 13px;
+            cursor: pointer;
+            transition: color 0.15s ease;
+        }
+
+        .clear-tasks-btn:hover {
+            color: #fb7185;
+        }
+
+        .clear-tasks-btn.hidden {
+            display: none;
+        }
+
+        .clear-confirm {
+            display: none;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 14px;
+            padding: 14px;
+            border-radius: 10px;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .clear-confirm.active {
+            display: flex;
+        }
+
+        .clear-confirm-text {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.85);
+        }
+
+        .clear-confirm-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .clear-confirm-row .time-step-btn {
+            flex: 1;
+        }
+
+        .todo-section-label.overdue-label {
+            color: #fb7185;
+        }
+
+        .add-task-input {
+            flex: 1;
+            padding: 12px 14px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.06);
+            color: #ffffff;
+            font-family: inherit;
+            font-size: 14px;
+        }
+
+        .add-task-input::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .add-task-input:focus {
+            outline: none;
+            border-color: #6366f1;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .add-task-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: none;
+            background: #6366f1;
+            color: #ffffff;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: filter 0.15s ease, transform 0.1s ease;
+        }
+
+        .add-task-btn:hover {
+            filter: brightness(1.1);
+        }
+
+        .add-task-btn:active {
+            transform: scale(0.94);
+        }
+
         @media (max-width: 768px) {
             .settings-panel {
                 max-width: 100%;
+            }
+
+            .todo-panel {
+                max-width: 100%;
+                border-top-left-radius: 0;
+                border-bottom-left-radius: 0;
             }
 
             .time {
@@ -701,6 +1168,16 @@
             .mode-btn {
                 padding: 8px 16px;
                 font-size: 12px;
+            }
+
+            .tasks-btn span {
+                display: none;
+            }
+
+            .tasks-btn {
+                width: 50px;
+                padding: 0;
+                justify-content: center;
             }
         }
 
@@ -737,7 +1214,7 @@
         }
     </style>
 
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Orbitron:wght@400;700&family=Roboto+Mono:wght@400;700&family=Space+Mono:wght@400;700&family=Playfair+Display:wght@400;700&family=Poppins:wght@400;600&family=Montserrat:wght@400;600&family=Raleway:wght@400;600&family=Lora:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@400;700&family=Roboto+Mono:wght@400;700&family=Space+Mono:wght@400;700&family=Playfair+Display:wght@400;700&family=Poppins:wght@400;600&family=Montserrat:wght@400;600&family=Raleway:wght@400;600&family=Lora:wght@400;600&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="container">
@@ -795,14 +1272,19 @@
     </div>
 
     <div class="controls" id="controls">
-        <button class="settings-btn" id="settingsBtn">⚙️</button>
+        <div class="left-controls">
+            <button class="settings-btn" id="settingsBtn">⚙️</button>
+            <button class="tasks-btn" id="tasksBtn">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                <span>Tasks</span>
+            </button>
+        </div>
         <div></div>
     </div>
 
     <div class="mode-controls" id="modeControls">
         <button class="mode-btn active" data-mode="clock">Clock</button>
         <button class="mode-btn" data-mode="timer">Timer</button>
-        <button class="mode-btn" data-mode="stopwatch">Stopwatch</button>
     </div>
 
     <div class="settings-panel" id="settingsPanel">
@@ -811,15 +1293,12 @@
             <button class="close-btn" id="closeSettings">&times;</button>
         </div>
 
-        <!-- Themes -->
         <div class="settings-section">
             <h3>Theme</h3>
             <div class="settings-group" id="themeGroup">
-                <!-- Generated by JS -->
-            </div>
+                </div>
         </div>
 
-        <!-- Gradient -->
         <div class="settings-section">
             <h3>Gradient</h3>
             <div class="toggle-group">
@@ -840,15 +1319,12 @@
             </div>
         </div>
 
-        <!-- Font -->
         <div class="settings-section">
             <h3>Font</h3>
             <div class="settings-group" id="fontGroup">
-                <!-- Generated by JS -->
-            </div>
+                </div>
         </div>
 
-        <!-- Time Settings -->
         <div class="settings-section">
             <h3>Time</h3>
             <div class="toggle-group">
@@ -880,14 +1356,51 @@
                 </select>
             </div>
         </div>
+    </div>
 
-        <!-- Stopwatch Mode -->
-        <div class="settings-section mode-content" id="stopwatchSettings">
-            <h3>Stopwatch</h3>
-            <div class="button-group">
-                <button class="btn primary" id="stopwatchStart">Start</button>
-                <button class="btn" id="stopwatchPause">Pause</button>
-                <button class="btn" id="stopwatchReset">Reset</button>
+    <div class="todo-panel" id="todoPanel">
+        <div class="todo-header">
+            <h2>To-Do List</h2>
+            <button class="todo-close-btn" id="closeTodo">&times;</button>
+        </div>
+        <div class="todo-body" id="todoBody"></div>
+        <div class="todo-footer">
+            <div class="todo-progress-row">
+                <span class="todo-progress-text" id="todoProgressText">0 of 0 tasks completed</span>
+                <span class="todo-progress-pct" id="todoProgressPct">0%</span>
+            </div>
+            <div class="todo-progress-track">
+                <div class="todo-progress-fill" id="todoProgressFill" style="width: 0%;"></div>
+            </div>
+            <div class="add-task-row" id="addTaskRow">
+                <input type="text" class="add-task-input" id="newTaskInput" placeholder="Add a new task...">
+                <button class="add-task-btn" id="addTaskBtn" aria-label="Add task">+</button>
+            </div>
+            <div class="add-task-time-step" id="addTaskTimeStep">
+                <div class="add-task-time-step-inner" id="dateSubStep">
+                    <div class="add-task-time-label">What day is it due?</div>
+                    <div class="add-task-time-row">
+                        <input type="date" class="add-task-time-input" id="newTaskDateInput">
+                        <button class="time-step-btn skip" id="skipDateBtn">Skip</button>
+                        <button class="time-step-btn set" id="nextDateBtn">Next</button>
+                    </div>
+                </div>
+                <div class="add-task-time-step-inner" id="timeSubStep" style="display: none;">
+                    <div class="add-task-time-label">What time is it due?</div>
+                    <div class="add-task-time-row">
+                        <input type="time" class="add-task-time-input" id="newTaskTimeInput">
+                        <button class="time-step-btn skip" id="skipTimeBtn">Skip</button>
+                        <button class="time-step-btn set" id="setTaskTimeBtn">Set</button>
+                    </div>
+                </div>
+            </div>
+            <button class="clear-tasks-btn" id="clearTasksBtn">Clear all tasks</button>
+            <div class="clear-confirm" id="clearConfirm">
+                <div class="clear-confirm-text">Clear all tasks? This can't be undone.</div>
+                <div class="clear-confirm-row">
+                    <button class="time-step-btn skip" id="cancelClearBtn">Cancel</button>
+                    <button class="time-step-btn danger" id="confirmClearBtn">Clear all</button>
+                </div>
             </div>
         </div>
     </div>
@@ -934,11 +1447,16 @@
             timerRunning: false,
             timerTime: 0,
             timerTotal: 0,
-            stopwatchRunning: false,
-            stopwatchTime: 0,
             controlsVisible: false,
             inactivityTimer: null
         };
+
+        // To-do task state — each task: { id, name, due (ISO string or null), completed }
+        let tasks = [];
+        let nextTaskId = 1;
+        let pendingTaskName = null;
+        let pendingDueDateStr = null;
+        let lastClearDay = new Date().toDateString();
 
         // DOM Elements
         const timeDisplay = document.getElementById('time');
@@ -964,22 +1482,51 @@
         const timerPlayBtn = document.getElementById('timerPlayBtn');
         const timerResetBtnNew = document.getElementById('timerResetBtnNew');
         const playIcon = document.getElementById('playIcon');
-        const stopwatchStartBtn = document.getElementById('stopwatchStart');
-        const stopwatchPauseBtn = document.getElementById('stopwatchPause');
-        const stopwatchResetBtn = document.getElementById('stopwatchReset');
+
+        // To-do DOM elements
+        const tasksBtn = document.getElementById('tasksBtn');
+        const todoPanel = document.getElementById('todoPanel');
+        const closeTodo = document.getElementById('closeTodo');
+        const todoBody = document.getElementById('todoBody');
+        const todoProgressText = document.getElementById('todoProgressText');
+        const todoProgressPct = document.getElementById('todoProgressPct');
+        const todoProgressFill = document.getElementById('todoProgressFill');
+        const newTaskInput = document.getElementById('newTaskInput');
+        const addTaskBtn = document.getElementById('addTaskBtn');
+        const addTaskRow = document.getElementById('addTaskRow');
+        const addTaskTimeStep = document.getElementById('addTaskTimeStep');
+        const dateSubStep = document.getElementById('dateSubStep');
+        const timeSubStep = document.getElementById('timeSubStep');
+        const newTaskDateInput = document.getElementById('newTaskDateInput');
+        const newTaskTimeInput = document.getElementById('newTaskTimeInput');
+        const skipDateBtn = document.getElementById('skipDateBtn');
+        const nextDateBtn = document.getElementById('nextDateBtn');
+        const skipTimeBtn = document.getElementById('skipTimeBtn');
+        const setTaskTimeBtn = document.getElementById('setTaskTimeBtn');
+        const clearTasksBtn = document.getElementById('clearTasksBtn');
+        const clearConfirm = document.getElementById('clearConfirm');
+        const cancelClearBtn = document.getElementById('cancelClearBtn');
+        const confirmClearBtn = document.getElementById('confirmClearBtn');
 
         // Initialize
         function init() {
             loadSettings();
+            loadTasks();
+            checkMidnightClear();
             renderThemes();
             renderFonts();
             setupEventListeners();
             updateClock();
             setInterval(updateClock, 100);
             setInterval(tickTimer, 1000);
+            setInterval(() => {
+                checkMidnightClear();
+                renderTasks();
+            }, 30000);
             applySettings();
             refreshTimerFromInputs();
             selectMode(state.mode);
+            renderTasks();
 
             requestAnimationFrame(sizeTimerRing);
             window.addEventListener('resize', scheduleSizeTimerRing);
@@ -1017,6 +1564,44 @@
                 localStorage.setItem('clockSettings', JSON.stringify(toSave));
             } catch (e) {
                 // localStorage unavailable - settings just won't persist across reloads
+            }
+        }
+
+        function loadTasks() {
+            try {
+                const saved = localStorage.getItem('clockTasks');
+                if (saved) {
+                    const savedTasks = JSON.parse(saved);
+                    if (Array.isArray(savedTasks)) {
+                        tasks = savedTasks;
+                        nextTaskId = tasks.length ? Math.max(...tasks.map(t => t.id)) + 1 : 1;
+                    }
+                }
+                const savedDay = localStorage.getItem('clockTasksLastClearDay');
+                if (savedDay) lastClearDay = savedDay;
+            } catch (e) {
+                // localStorage unavailable
+            }
+        }
+
+        function saveTasks() {
+            try {
+                localStorage.setItem('clockTasks', JSON.stringify(tasks));
+                localStorage.setItem('clockTasksLastClearDay', lastClearDay);
+            } catch (e) {
+                // localStorage unavailable - tasks just won't persist across reloads
+            }
+        }
+
+        // Clears completed tasks once the calendar day rolls over (i.e. at midnight)
+        function checkMidnightClear() {
+            const today = new Date().toDateString();
+            if (today !== lastClearDay) {
+                lastClearDay = today;
+                const hadCompleted = tasks.some(t => t.completed);
+                tasks = tasks.filter(t => !t.completed);
+                saveTasks();
+                if (hadCompleted) renderTasks();
             }
         }
 
@@ -1188,10 +1773,42 @@
                 });
             });
 
-            // Stopwatch
-            stopwatchStartBtn.addEventListener('click', startStopwatch);
-            stopwatchPauseBtn.addEventListener('click', pauseStopwatch);
-            stopwatchResetBtn.addEventListener('click', resetStopwatch);
+            // To-do panel
+            tasksBtn.addEventListener('click', () => {
+                todoPanel.classList.add('open');
+                showControls();
+            });
+
+            closeTodo.addEventListener('click', () => {
+                todoPanel.classList.remove('open');
+            });
+
+            addTaskBtn.addEventListener('click', startAddTask);
+            newTaskInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') startAddTask();
+            });
+            skipDateBtn.addEventListener('click', skipDueDate);
+            nextDateBtn.addEventListener('click', goToTimeStep);
+            newTaskDateInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') goToTimeStep();
+            });
+            skipTimeBtn.addEventListener('click', skipDueTime);
+            setTaskTimeBtn.addEventListener('click', setDueTime);
+            newTaskTimeInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') setDueTime();
+            });
+
+            clearTasksBtn.addEventListener('click', () => {
+                clearTasksBtn.classList.add('hidden');
+                clearConfirm.classList.add('active');
+            });
+            cancelClearBtn.addEventListener('click', hideClearConfirm);
+            confirmClearBtn.addEventListener('click', () => {
+                tasks = [];
+                saveTasks();
+                renderTasks();
+                hideClearConfirm();
+            });
 
             // Mouse activity
             document.addEventListener('mousemove', showControls);
@@ -1200,6 +1817,13 @@
                     // Clicked outside settings
                 }
             });
+
+            // Extra safety save when the tab is hidden/closed or the page unloads
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'hidden') saveTasks();
+            });
+            window.addEventListener('beforeunload', saveTasks);
+            window.addEventListener('pagehide', saveTasks);
         }
 
         function selectMode(mode) {
@@ -1212,10 +1836,6 @@
             document.querySelectorAll('.mode-content').forEach(el => {
                 el.classList.remove('active');
             });
-
-            if (mode === 'stopwatch') {
-                document.getElementById('stopwatchSettings').classList.add('active');
-            }
 
             clockDisplayEl.style.display = mode === 'timer' ? 'none' : '';
             timerDisplayEl.classList.toggle('active', mode === 'timer');
@@ -1296,8 +1916,6 @@
         function updateClock() {
             if (state.mode === 'clock') {
                 displayClock();
-            } else if (state.mode === 'stopwatch') {
-                displayStopwatch();
             }
         }
 
@@ -1476,41 +2094,195 @@
             updateRing();
         }
 
-        function displayStopwatch() {
-            const minutes = Math.floor(state.stopwatchTime / 6000);
-            const seconds = Math.floor((state.stopwatchTime % 6000) / 100);
-            const centiseconds = state.stopwatchTime % 100;
-            const timeStr = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}.${String(centiseconds).padStart(2, '0')}`;
-            timeDisplay.textContent = timeStr;
-            dateDisplay.textContent = '';
-            updateTabTitle(timeStr);
-        }
-
         function updateTabTitle(title) {
             document.title = title;
         }
 
-        function startStopwatch() {
-            if (!state.stopwatchRunning) {
-                state.stopwatchRunning = true;
-                const interval = setInterval(() => {
-                    if (state.stopwatchRunning) {
-                        state.stopwatchTime++;
-                    } else {
-                        clearInterval(interval);
-                    }
-                }, 10);
+        // ===== To-Do List logic =====
+
+        const CHECK_SVG = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+        const FLAG_SVG = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M5 3v18h1.5v-6.5h9.7l-1.4-3.25L16.2 8H6.5V3H5z"/></svg>';
+        const HANDLE_SVG = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="7" x2="20" y2="7"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="17" x2="20" y2="17"></line></svg>';
+
+        function isOverdue(task) {
+            return !task.completed && task.due && new Date(task.due).getTime() < Date.now();
+        }
+
+        function formatDueTime(dueISO) {
+            return new Date(dueISO).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+        }
+
+        function taskCardHTML(task) {
+            const overdue = isOverdue(task);
+            let dueLine = '';
+            if (task.due) {
+                const timeStr = formatDueTime(task.due);
+                dueLine = overdue
+                    ? `<div class="task-due urgent-high">Overdue &middot; ${timeStr}</div>`
+                    : `<div class="task-due">Due ${timeStr}</div>`;
             }
+            const sideIcon = task.completed
+                ? ''
+                : (overdue
+                    ? `<span class="task-side-icon flag-high">${FLAG_SVG}</span>`
+                    : `<span class="task-side-icon">${HANDLE_SVG}</span>`);
+            return `
+                <div class="task-card ${task.completed ? 'completed' : ''}" data-id="${task.id}">
+                    <button class="task-checkbox ${task.completed ? 'checked' : ''}" data-id="${task.id}" aria-label="Toggle task complete">${CHECK_SVG}</button>
+                    <div class="task-info">
+                        <div class="task-name">${escapeHTML(task.name)}</div>
+                        ${dueLine}
+                    </div>
+                    ${sideIcon}
+                </div>
+            `;
         }
 
-        function pauseStopwatch() {
-            state.stopwatchRunning = false;
+        function escapeHTML(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
         }
 
-        function resetStopwatch() {
-            state.stopwatchRunning = false;
-            state.stopwatchTime = 0;
-            updateClock();
+        function renderTasks() {
+            const active = tasks.filter(t => !t.completed);
+            const overdueTasks = active.filter(isOverdue);
+            const otherTasks = active.filter(t => !isOverdue(t));
+            const completedTasks = tasks.filter(t => t.completed);
+
+            const sections = [];
+            if (overdueTasks.length) {
+                sections.push(`
+                    <div class="todo-section">
+                        <div class="todo-section-label overdue-label">Overdue</div>
+                        ${overdueTasks.map(taskCardHTML).join('')}
+                    </div>
+                `);
+            }
+            if (otherTasks.length) {
+                sections.push(`
+                    <div class="todo-section">
+                        <div class="todo-section-label">Tasks</div>
+                        ${otherTasks.map(taskCardHTML).join('')}
+                    </div>
+                `);
+            }
+            if (completedTasks.length) {
+                sections.push(`
+                    <div class="todo-section">
+                        <div class="todo-section-label">Completed</div>
+                        ${completedTasks.map(taskCardHTML).join('')}
+                    </div>
+                `);
+            }
+
+            todoBody.innerHTML = sections.join('') || '<div class="todo-section-label">No tasks yet — add one below</div>';
+
+            todoBody.querySelectorAll('.task-checkbox').forEach(btn => {
+                btn.addEventListener('click', () => toggleTaskComplete(parseInt(btn.dataset.id, 10)));
+            });
+
+            updateProgress();
+        }
+
+        function toggleTaskComplete(id) {
+            const task = tasks.find(t => t.id === id);
+            if (!task) return;
+            task.completed = !task.completed;
+            saveTasks();
+            renderTasks();
+        }
+
+        function hideClearConfirm() {
+            clearConfirm.classList.remove('active');
+            clearTasksBtn.classList.remove('hidden');
+        }
+
+        // Step 1: capture the task name, then move to the "pick a due date" step
+        function startAddTask() {
+            const name = newTaskInput.value.trim();
+            if (!name) return;
+            pendingTaskName = name;
+            pendingDueDateStr = null;
+            newTaskInput.value = '';
+            addTaskRow.classList.add('hidden');
+            addTaskTimeStep.classList.add('active');
+            showDateSubStep();
+        }
+
+        function showDateSubStep() {
+            dateSubStep.style.display = 'flex';
+            timeSubStep.style.display = 'none';
+            newTaskDateInput.value = '';
+            newTaskDateInput.focus();
+        }
+
+        function showTimeSubStep() {
+            dateSubStep.style.display = 'none';
+            timeSubStep.style.display = 'flex';
+            newTaskTimeInput.value = '';
+            newTaskTimeInput.focus();
+        }
+
+        // Date sub-step: Skip drops the due date entirely; Next moves on to picking a time
+        function skipDueDate() {
+            finalizeNewTask(null, null);
+        }
+
+        function goToTimeStep() {
+            const dateVal = newTaskDateInput.value;
+            if (!dateVal) {
+                finalizeNewTask(null, null);
+                return;
+            }
+            pendingDueDateStr = dateVal;
+            showTimeSubStep();
+        }
+
+        // Time sub-step: Skip keeps the date with a default end-of-day time; Set uses the chosen time
+        function skipDueTime() {
+            finalizeNewTask(pendingDueDateStr, null);
+        }
+
+        function setDueTime() {
+            finalizeNewTask(pendingDueDateStr, newTaskTimeInput.value);
+        }
+
+        function resetAddTaskUI() {
+            pendingTaskName = null;
+            pendingDueDateStr = null;
+            addTaskRow.classList.remove('hidden');
+            addTaskTimeStep.classList.remove('active');
+            newTaskInput.focus();
+        }
+
+        function finalizeNewTask(dateStr, timeStr) {
+            if (!pendingTaskName) {
+                resetAddTaskUI();
+                return;
+            }
+            let due = null;
+            if (dateStr) {
+                const [y, mo, d] = dateStr.split('-').map(Number);
+                let hh = 23, mm = 59;
+                if (timeStr) {
+                    [hh, mm] = timeStr.split(':').map(Number);
+                }
+                due = new Date(y, mo - 1, d, hh, mm, 0, 0).toISOString();
+            }
+            tasks.push({ id: nextTaskId++, name: pendingTaskName, due, completed: false });
+            saveTasks();
+            renderTasks();
+            resetAddTaskUI();
+        }
+
+        function updateProgress() {
+            const total = tasks.length;
+            const done = tasks.filter(t => t.completed).length;
+            const pct = total ? Math.round((done / total) * 100) : 0;
+            todoProgressText.textContent = `${done} of ${total} tasks completed`;
+            todoProgressPct.textContent = `${pct}%`;
+            todoProgressFill.style.width = `${pct}%`;
         }
 
         // Start
