@@ -408,6 +408,34 @@
             color: white;
         }
 
+        .alarm-sound-row {
+            display: flex;
+            gap: 8px;
+            align-items: stretch;
+        }
+
+        .alarm-sound-row select {
+            flex: 1;
+        }
+
+        .preview-sound-btn {
+            width: 44px;
+            flex-shrink: 0;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .preview-sound-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
         .timer-input {
             display: flex;
             gap: 12px;
@@ -462,6 +490,15 @@
             stroke-width: 3;
             stroke-linecap: round;
             transition: stroke-dashoffset 0.3s linear, opacity 0.3s ease;
+        }
+
+        .ring-progress.alarm-pulse {
+            animation: ringPulse 1s ease-in-out infinite;
+        }
+
+        @keyframes ringPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.35; }
         }
 
         .timer-units-col {
@@ -577,6 +614,92 @@
             gap: 20px;
             margin-top: clamp(16px, 3vh, 32px);
             z-index: 10;
+        }
+
+        .timer-alarm-banner {
+            display: none;
+            align-items: center;
+            gap: 8px;
+            margin-top: clamp(10px, 2vh, 20px);
+            padding: 8px 16px;
+            border-radius: 20px;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            font-size: 13px;
+            letter-spacing: 0.03em;
+            backdrop-filter: blur(10px);
+            z-index: 10;
+        }
+
+        .timer-alarm-banner.active {
+            display: flex;
+        }
+
+        .timer-sound-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: clamp(14px, 2.5vh, 26px);
+            padding: 6px 8px 6px 14px;
+            border-radius: 22px;
+            background: var(--bg-secondary);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            z-index: 10;
+        }
+
+        .timer-sound-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            flex-shrink: 0;
+        }
+
+        .timer-sound-select {
+            appearance: none;
+            -webkit-appearance: none;
+            border: none;
+            background: transparent;
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 500;
+            padding: 4px 4px;
+            cursor: pointer;
+            max-width: 40vw;
+        }
+
+        .timer-sound-select:focus {
+            outline: none;
+        }
+
+        .timer-sound-select option {
+            background: #1a1a1a;
+            color: white;
+        }
+
+        .timer-sound-preview-btn {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(255, 255, 255, 0.12);
+            color: var(--text-primary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: background 0.2s ease, transform 0.1s ease;
+        }
+
+        .timer-sound-preview-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .timer-sound-preview-btn:active {
+            transform: scale(0.92);
         }
 
         .timer-icon-btn {
@@ -1326,6 +1449,19 @@
                     <svg id="playIcon" viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M8 5v14l11-7z"></path></svg>
                 </button>
             </div>
+            <div class="timer-alarm-banner" id="timerAlarmBanner">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                <span>Time's up &middot; tap reset to stop the alarm</span>
+            </div>
+            <div class="timer-sound-row" id="timerSoundRow">
+                <span class="timer-sound-icon">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+                </span>
+                <select id="timerAlarmSoundSelect" class="timer-sound-select" aria-label="Alarm sound"></select>
+                <button class="timer-sound-preview-btn" id="timerPreviewAlarmBtn" aria-label="Preview alarm sound" title="Preview sound">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"></path></svg>
+                </button>
+            </div>
         </div>
     </div>
 
@@ -1414,6 +1550,19 @@
                 </select>
             </div>
         </div>
+
+        <div class="settings-section">
+            <h3>Alarm Sound</h3>
+            <div class="select-group">
+                <label class="select-label">Sound (plays on repeat when the timer ends, until you hit reset)</label>
+                <div class="alarm-sound-row">
+                    <select id="alarmSoundSelect"></select>
+                    <button class="preview-sound-btn" id="previewAlarmBtn" aria-label="Preview sound" title="Preview sound">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"></path></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="todo-panel" id="todoPanel">
@@ -1492,6 +1641,58 @@
             { name: 'Lora', class: 'font-lora' }
         ];
 
+        // Each sound is a short synthesized pattern (Web Audio API, no external files)
+        // that gets replayed on a loop every `period` ms until the alarm is stopped.
+        const ALARM_SOUNDS = [
+            {
+                name: 'Classic Beep',
+                period: 700,
+                play(ctx, t) {
+                    playTone(ctx, 880, t, 0.18, 'sine', 0.35);
+                }
+            },
+            {
+                name: 'Digital Alarm',
+                period: 650,
+                play(ctx, t) {
+                    playTone(ctx, 1000, t, 0.12, 'square', 0.22);
+                    playTone(ctx, 1000, t + 0.18, 0.12, 'square', 0.22);
+                }
+            },
+            {
+                name: 'Gentle Chime',
+                period: 1900,
+                play(ctx, t) {
+                    playTone(ctx, 659.25, t, 0.45, 'sine', 0.25);
+                    playTone(ctx, 987.77, t + 0.18, 0.55, 'sine', 0.2);
+                }
+            },
+            {
+                name: 'Bell',
+                period: 1600,
+                play(ctx, t) {
+                    playTone(ctx, 1046.5, t, 0.7, 'triangle', 0.3);
+                    playTone(ctx, 1568, t + 0.04, 0.5, 'triangle', 0.14);
+                }
+            },
+            {
+                name: 'Siren',
+                period: 800,
+                play(ctx, t) {
+                    playTone(ctx, 620, t, 0.35, 'sawtooth', 0.18);
+                    playTone(ctx, 920, t + 0.35, 0.35, 'sawtooth', 0.18);
+                }
+            },
+            {
+                name: 'Rooster',
+                period: 2200,
+                play(ctx, t) {
+                    playTone(ctx, 523.25, t, 0.12, 'square', 0.22);
+                    playTone(ctx, 783.99, t + 0.13, 0.35, 'square', 0.22);
+                }
+            }
+        ];
+
         // State
         const state = {
             mode: 'clock',
@@ -1504,9 +1705,11 @@
             gradientOn: false,
             gradientMovement: false,
             gradientStyle: 'linear',
+            alarmSound: 'Classic Beep',
             timerRunning: false,
             timerTime: 0,
             timerTotal: 0,
+            timerAlarming: false,
             controlsVisible: false,
             inactivityTimer: null
         };
@@ -1517,6 +1720,10 @@
         let pendingTaskName = null;
         let pendingDueDateStr = null;
         let lastClearDay = new Date().toDateString();
+
+        // Alarm audio state
+        let audioCtx = null;
+        let alarmIntervalId = null;
 
         // DOM Elements
         const timeDisplay = document.getElementById('time');
@@ -1533,6 +1740,8 @@
         const dateToggle = document.getElementById('dateToggle');
         const timeFormatSelect = document.getElementById('timeFormatSelect');
         const timezoneSelect = document.getElementById('timezoneSelect');
+        const alarmSoundSelect = document.getElementById('alarmSoundSelect');
+        const previewAlarmBtn = document.getElementById('previewAlarmBtn');
         const clockDisplayEl = document.getElementById('clockDisplay');
         const timerDisplayEl = document.getElementById('timerDisplay');
         const hoursInput = document.getElementById('hoursInput');
@@ -1542,6 +1751,9 @@
         const timerPlayBtn = document.getElementById('timerPlayBtn');
         const timerResetBtnNew = document.getElementById('timerResetBtnNew');
         const playIcon = document.getElementById('playIcon');
+        const timerAlarmBanner = document.getElementById('timerAlarmBanner');
+        const timerAlarmSoundSelect = document.getElementById('timerAlarmSoundSelect');
+        const timerPreviewAlarmBtn = document.getElementById('timerPreviewAlarmBtn');
 
         // To-do DOM elements
         const tasksBtn = document.getElementById('tasksBtn');
@@ -1577,6 +1789,7 @@
             checkMidnightClear();
             renderThemes();
             renderFonts();
+            renderAlarmSounds();
             setupEventListeners();
             updateClock();
             setInterval(updateClock, 100);
@@ -1621,6 +1834,7 @@
                     gradientOn: state.gradientOn,
                     gradientMovement: state.gradientMovement,
                     gradientStyle: state.gradientStyle,
+                    alarmSound: state.alarmSound,
                     mode: state.mode
                 };
                 localStorage.setItem('clockSettings', JSON.stringify(toSave));
@@ -1692,6 +1906,24 @@
             group.querySelectorAll('.font-preview').forEach(el => {
                 el.addEventListener('click', () => selectFont(el.dataset.font));
             });
+        }
+
+        function renderAlarmSounds() {
+            const optionsHTML = ALARM_SOUNDS.map(sound =>
+                `<option value="${sound.name}">${sound.name}</option>`
+            ).join('');
+            alarmSoundSelect.innerHTML = optionsHTML;
+            timerAlarmSoundSelect.innerHTML = optionsHTML;
+            alarmSoundSelect.value = state.alarmSound;
+            timerAlarmSoundSelect.value = state.alarmSound;
+        }
+
+        // Keeps the settings-panel picker and the on-timer-page picker in sync
+        function setAlarmSound(name) {
+            state.alarmSound = name;
+            alarmSoundSelect.value = name;
+            timerAlarmSoundSelect.value = name;
+            saveSettings();
         }
 
         function selectTheme(themeName) {
@@ -1797,6 +2029,24 @@
                 state.timezone = e.target.value;
                 saveSettings();
             });
+
+            // Alarm sound (settings panel picker + on-timer-page picker, kept in sync)
+            alarmSoundSelect.addEventListener('change', (e) => {
+                setAlarmSound(e.target.value);
+            });
+
+            timerAlarmSoundSelect.addEventListener('change', (e) => {
+                setAlarmSound(e.target.value);
+            });
+
+            function previewSelectedSound() {
+                ensureAudioCtx();
+                const sound = getSelectedAlarmSound();
+                sound.play(audioCtx, audioCtx.currentTime);
+            }
+
+            previewAlarmBtn.addEventListener('click', previewSelectedSound);
+            timerPreviewAlarmBtn.addEventListener('click', previewSelectedSound);
 
             // Mode controls
             document.querySelectorAll('.mode-btn').forEach(btn => {
@@ -1982,6 +2232,11 @@
             // Apply selects
             timeFormatSelect.value = state.timeFormat;
             timezoneSelect.value = state.timezone;
+            if (!ALARM_SOUNDS.some(s => s.name === state.alarmSound)) {
+                state.alarmSound = ALARM_SOUNDS[0].name;
+            }
+            alarmSoundSelect.value = state.alarmSound;
+            timerAlarmSoundSelect.value = state.alarmSound;
         }
 
         function updateClock() {
@@ -2131,6 +2386,18 @@
         }
 
         function toggleTimer() {
+            // Any direct click on the play/pause button is a genuine user gesture,
+            // so this is a safe place to create/unlock the audio context for later use.
+            ensureAudioCtx();
+
+            if (state.timerAlarming) {
+                // If the alarm is currently ringing, treat this as acknowledging it
+                // and starting a fresh countdown rather than "pausing" a finished timer.
+                stopAlarm();
+                startTimerNew();
+                return;
+            }
+
             if (state.timerRunning) {
                 pauseTimerNew();
             } else {
@@ -2156,6 +2423,7 @@
         }
 
         function resetTimerNew() {
+            stopAlarm();
             state.timerRunning = false;
             setPlayIcon(false);
             setTimerControlsDisabled(false);
@@ -2171,6 +2439,7 @@
                 state.timerTime = 0;
                 pauseTimerNew();
                 document.title = '✓ Timer Complete';
+                startAlarm();
             } else {
                 const h = Math.floor(state.timerTime / 3600);
                 const m = Math.floor((state.timerTime % 3600) / 60);
@@ -2186,6 +2455,68 @@
 
         function updateTabTitle(title) {
             document.title = title;
+        }
+
+        // ===== Alarm sound (Web Audio API — no external audio files needed) =====
+
+        function ensureAudioCtx() {
+            if (!audioCtx) {
+                const AC = window.AudioContext || window.webkitAudioContext;
+                if (!AC) return null;
+                audioCtx = new AC();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume().catch(() => {});
+            }
+            return audioCtx;
+        }
+
+        function playTone(ctx, freq, startTime, duration, type, volume) {
+            if (!ctx) return;
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = type;
+            osc.frequency.value = freq;
+            gain.gain.setValueAtTime(0.0001, startTime);
+            gain.gain.linearRampToValueAtTime(volume, startTime + 0.015);
+            gain.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(startTime);
+            osc.stop(startTime + duration + 0.03);
+        }
+
+        function getSelectedAlarmSound() {
+            return ALARM_SOUNDS.find(s => s.name === state.alarmSound) || ALARM_SOUNDS[0];
+        }
+
+        // Starts looping the selected alarm sound. Keeps playing (repeating every
+        // `period` ms) until stopAlarm() is called — which currently only happens
+        // when the reset button is pressed (or a fresh timer is started from the
+        // alarm state).
+        function startAlarm() {
+            const ctx = ensureAudioCtx();
+            if (!ctx) return; // Web Audio unsupported — fail silently, visuals still show
+            stopAlarm();
+
+            state.timerAlarming = true;
+            timerAlarmBanner.classList.add('active');
+            ringProgress.classList.add('alarm-pulse');
+
+            const sound = getSelectedAlarmSound();
+            const playCycle = () => sound.play(ctx, ctx.currentTime);
+            playCycle();
+            alarmIntervalId = setInterval(playCycle, sound.period);
+        }
+
+        function stopAlarm() {
+            if (alarmIntervalId) {
+                clearInterval(alarmIntervalId);
+                alarmIntervalId = null;
+            }
+            state.timerAlarming = false;
+            timerAlarmBanner.classList.remove('active');
+            ringProgress.classList.remove('alarm-pulse');
         }
 
         // ===== To-Do List logic =====
