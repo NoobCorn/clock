@@ -948,6 +948,18 @@
             background: rgba(255, 255, 255, 0.08);
         }
 
+        .task-card.dragging {
+            opacity: 0.4;
+        }
+
+        .task-card.drag-over-top {
+            box-shadow: inset 0 2px 0 0 #6366f1;
+        }
+
+        .task-card.drag-over-bottom {
+            box-shadow: inset 0 -2px 0 0 #6366f1;
+        }
+
         .task-checkbox {
             width: 22px;
             height: 22px;
@@ -1031,6 +1043,15 @@
 
         .task-side-icon.flag-high {
             color: #fb7185;
+        }
+
+        .task-side-icon.task-drag-handle {
+            cursor: grab;
+            touch-action: none;
+        }
+
+        .task-side-icon.task-drag-handle:active {
+            cursor: grabbing;
         }
 
         .task-delete-btn {
@@ -2549,6 +2570,9 @@
 
         let pendingDeleteId = null;
 
+        // Drag-to-reorder state (used only for the non-overdue, non-completed "Tasks" section)
+        let dragSrcId = null;
+
         function isOverdue(task) {
             return !task.completed && task.due && new Date(task.due).getTime() < Date.now();
         }
@@ -2588,13 +2612,15 @@
                     dueLine = `<div class="task-due ${tierClass}">Due ${label}</div>`;
                 }
             }
+            // Only tasks in the plain "Tasks" section (not overdue, not completed) are
+            // reorderable, so only they get the drag handle + draggable card.
             const sideIcon = task.completed
                 ? ''
                 : (overdue
                     ? `<span class="task-side-icon flag-high">${FLAG_SVG}</span>`
-                    : `<span class="task-side-icon">${HANDLE_SVG}</span>`);
+                    : `<span class="task-side-icon task-drag-handle" title="Drag to reorder">${HANDLE_SVG}</span>`);
             return `
-                <div class="task-card ${task.completed ? 'completed' : ''}" data-id="${task.id}">
+                <div class="task-card ${task.completed ? 'completed' : ''}" data-id="${task.id}" draggable="false">
                     <button class="task-checkbox ${task.completed ? 'checked' : ''}" data-id="${task.id}" aria-label="Toggle task complete">${CHECK_SVG}</button>
                     <div class="task-info">
                         <div class="task-name">${escapeHTML(task.name)}</div>
@@ -2643,7 +2669,7 @@
             }
             if (otherTasks.length) {
                 sections.push(`
-                    <div class="todo-section">
+                    <div class="todo-section" id="reorderableTasksSection">
                         <div class="todo-section-label">Tasks</div>
                         ${otherTasks.map(t => taskCardHTML(t, tierMap[t.id])).join('')}
                     </div>
@@ -2676,7 +2702,85 @@
                 btn.addEventListener('click', () => confirmDeleteTask(parseInt(btn.dataset.confirmDelete, 10)));
             });
 
+            setupDragHandlers();
             updateProgress();
+        }
+
+        // Wires up drag-and-drop reordering for cards that have a drag handle
+        // (i.e. non-overdue, non-completed tasks in the "Tasks" section).
+        function setupDragHandlers() {
+            todoBody.querySelectorAll('.task-card').forEach(card => {
+                const handle = card.querySelector('.task-drag-handle');
+                if (!handle) return;
+
+                // Only let the drag start from the handle itself, not the whole card,
+                // so normal clicks (checkbox, delete, etc.) still work as usual.
+                const enableDrag = () => { card.draggable = true; };
+                handle.addEventListener('mousedown', enableDrag);
+                handle.addEventListener('touchstart', enableDrag, { passive: true });
+
+                card.addEventListener('dragstart', handleDragStart);
+                card.addEventListener('dragover', handleDragOver);
+                card.addEventListener('dragleave', handleDragLeave);
+                card.addEventListener('drop', handleDrop);
+                card.addEventListener('dragend', handleDragEnd);
+            });
+        }
+
+        function handleDragStart(e) {
+            dragSrcId = parseInt(this.dataset.id, 10);
+            this.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+            try { e.dataTransfer.setData('text/plain', String(dragSrcId)); } catch (err) {}
+        }
+
+        function handleDragOver(e) {
+            if (dragSrcId === null || parseInt(this.dataset.id, 10) === dragSrcId) return;
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+
+            const rect = this.getBoundingClientRect();
+            const isAfter = (e.clientY - rect.top) > rect.height / 2;
+            this.classList.toggle('drag-over-bottom', isAfter);
+            this.classList.toggle('drag-over-top', !isAfter);
+        }
+
+        function handleDragLeave() {
+            this.classList.remove('drag-over-top', 'drag-over-bottom');
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            const targetId = parseInt(this.dataset.id, 10);
+            const dropAfter = this.classList.contains('drag-over-bottom');
+            this.classList.remove('drag-over-top', 'drag-over-bottom');
+            if (dragSrcId === null || targetId === dragSrcId) return;
+            reorderTasks(dragSrcId, targetId, dropAfter);
+        }
+
+        function handleDragEnd() {
+            this.classList.remove('dragging');
+            this.draggable = false;
+            dragSrcId = null;
+            todoBody.querySelectorAll('.drag-over-top, .drag-over-bottom').forEach(c => {
+                c.classList.remove('drag-over-top', 'drag-over-bottom');
+            });
+        }
+
+        // Moves the dragged task to sit just before/after the drop target within
+        // the underlying tasks array, then re-renders.
+        function reorderTasks(srcId, targetId, dropAfter) {
+            const srcIdx = tasks.findIndex(t => t.id === srcId);
+            if (srcIdx === -1) return;
+            const [moved] = tasks.splice(srcIdx, 1);
+            let targetIdx = tasks.findIndex(t => t.id === targetId);
+            if (targetIdx === -1) {
+                tasks.push(moved);
+            } else {
+                tasks.splice(dropAfter ? targetIdx + 1 : targetIdx, 0, moved);
+            }
+            saveTasks();
+            renderTasks();
         }
 
         function toggleTaskComplete(id) {
