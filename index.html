@@ -87,6 +87,65 @@
             text-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
         }
 
+        /* ===== Time Progress Indicators ===== */
+        .time-progress-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: clamp(200px, 24vw, 320px);
+            margin: 2vw auto 0;
+            opacity: 0.85;
+            transition: opacity 0.3s ease;
+        }
+
+        .time-progress-container:empty {
+            display: none;
+        }
+
+        .progress-item {
+            display: none;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .progress-item.active {
+            display: flex;
+        }
+
+        .progress-label-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            font-size: 11px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+        }
+
+        .progress-value {
+            font-variant-numeric: tabular-nums;
+            font-weight: 500;
+            color: var(--text-primary);
+            opacity: 0.8;
+        }
+
+        .progress-track {
+            width: 100%;
+            height: 3px;
+            border-radius: 2px;
+            background: var(--bg-secondary);
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            border-radius: 2px;
+            background: var(--accent);
+            opacity: 0.75;
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
         .controls {
             position: fixed;
             top: 0;
@@ -1420,6 +1479,36 @@
         <div class="clock-display" id="clockDisplay">
             <p class="time" id="time">00:00:00</p>
             <p class="date" id="date"></p>
+            
+            <div class="time-progress-container" id="timeProgressContainer">
+                <div class="progress-item" id="dayProgressWrap">
+                    <div class="progress-label-row">
+                        <span class="progress-label">Day</span>
+                        <span class="progress-value" id="dayProgressVal">0%</span>
+                    </div>
+                    <div class="progress-track">
+                        <div class="progress-bar" id="dayProgressBar"></div>
+                    </div>
+                </div>
+                <div class="progress-item" id="weekProgressWrap">
+                    <div class="progress-label-row">
+                        <span class="progress-label">Week</span>
+                        <span class="progress-value" id="weekProgressVal">0%</span>
+                    </div>
+                    <div class="progress-track">
+                        <div class="progress-bar" id="weekProgressBar"></div>
+                    </div>
+                </div>
+                <div class="progress-item" id="yearProgressWrap">
+                    <div class="progress-label-row">
+                        <span class="progress-label">Year</span>
+                        <span class="progress-value" id="yearProgressVal">0%</span>
+                    </div>
+                    <div class="progress-track">
+                        <div class="progress-bar" id="yearProgressBar"></div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div class="timer-display" id="timerDisplay">
@@ -1507,8 +1596,7 @@
 
         <div class="settings-section">
             <h3>Theme</h3>
-            <div class="settings-group" id="themeGroup">
-                </div>
+            <div class="settings-group" id="themeGroup"></div>
         </div>
 
         <div class="settings-section">
@@ -1533,8 +1621,7 @@
 
         <div class="settings-section">
             <h3>Font</h3>
-            <div class="settings-group" id="fontGroup">
-                </div>
+            <div class="settings-group" id="fontGroup"></div>
         </div>
 
         <div class="settings-section">
@@ -1566,6 +1653,22 @@
                     <option value="Australia/Sydney">Sydney</option>
                     <option value="Asia/Dubai">Dubai</option>
                 </select>
+            </div>
+        </div>
+
+        <div class="settings-section">
+            <h3>Time Progress</h3>
+            <div class="toggle-group">
+                <button class="toggle" id="dayProgressToggle"></button>
+                <label class="toggle-label">Day Progress</label>
+            </div>
+            <div class="toggle-group">
+                <button class="toggle" id="weekProgressToggle"></button>
+                <label class="toggle-label">Week Progress</label>
+            </div>
+            <div class="toggle-group">
+                <button class="toggle" id="yearProgressToggle"></button>
+                <label class="toggle-label">Year Progress</label>
             </div>
         </div>
 
@@ -1659,8 +1762,6 @@
             { name: 'Lora', class: 'font-lora' }
         ];
 
-        // Each sound is a short synthesized pattern (Web Audio API, no external files)
-        // that gets replayed on a loop every `period` ms until the alarm is stopped.
         const ALARM_SOUNDS = [
             {
                 name: 'Classic Beep',
@@ -1711,7 +1812,7 @@
             }
         ];
 
-        // State
+        // State (updated with Time Progress toggle settings)
         const state = {
             mode: 'clock',
             theme: 'Midnight',
@@ -1723,6 +1824,9 @@
             gradientOn: false,
             gradientMovement: false,
             gradientStyle: 'linear',
+            showDayProgress: false,
+            showWeekProgress: false,
+            showYearProgress: false,
             alarmSound: 'Classic Beep',
             timerRunning: false,
             timerTime: 0,
@@ -1736,14 +1840,12 @@
             inactivityTimer: null
         };
 
-        // To-do task state — each task: { id, name, due (ISO string or null), completed }
         let tasks = [];
         let nextTaskId = 1;
         let pendingTaskName = null;
         let pendingDueDateStr = null;
         let lastClearDay = new Date().toDateString();
 
-        // Alarm audio state
         let audioCtx = null;
         let alarmIntervalId = null;
 
@@ -1804,7 +1906,6 @@
         const cancelClearBtn = document.getElementById('cancelClearBtn');
         const confirmClearBtn = document.getElementById('confirmClearBtn');
 
-        // Initialize
         function init() {
             loadSettings();
             loadTasks();
@@ -1839,9 +1940,7 @@
                     const settings = JSON.parse(saved);
                     Object.assign(state, settings);
                 }
-            } catch (e) {
-                // localStorage unavailable (private browsing, sandboxed preview, file:// origin, etc.)
-            }
+            } catch (e) {}
         }
 
         function saveSettings() {
@@ -1856,6 +1955,9 @@
                     gradientOn: state.gradientOn,
                     gradientMovement: state.gradientMovement,
                     gradientStyle: state.gradientStyle,
+                    showDayProgress: state.showDayProgress,
+                    showWeekProgress: state.showWeekProgress,
+                    showYearProgress: state.showYearProgress,
                     alarmSound: state.alarmSound,
                     lastSetHours: state.lastSetHours,
                     lastSetMinutes: state.lastSetMinutes,
@@ -1863,9 +1965,7 @@
                     mode: state.mode
                 };
                 localStorage.setItem('clockSettings', JSON.stringify(toSave));
-            } catch (e) {
-                // localStorage unavailable - settings just won't persist across reloads
-            }
+            } catch (e) {}
         }
 
         function loadTasks() {
@@ -1880,21 +1980,16 @@
                 }
                 const savedDay = localStorage.getItem('clockTasksLastClearDay');
                 if (savedDay) lastClearDay = savedDay;
-            } catch (e) {
-                // localStorage unavailable
-            }
+            } catch (e) {}
         }
 
         function saveTasks() {
             try {
                 localStorage.setItem('clockTasks', JSON.stringify(tasks));
                 localStorage.setItem('clockTasksLastClearDay', lastClearDay);
-            } catch (e) {
-                // localStorage unavailable - tasks just won't persist across reloads
-            }
+            } catch (e) {}
         }
 
-        // Clears completed tasks once the calendar day rolls over (i.e. at midnight)
         function checkMidnightClear() {
             const today = new Date().toDateString();
             if (today !== lastClearDay) {
@@ -1943,7 +2038,6 @@
             timerAlarmSoundSelect.value = state.alarmSound;
         }
 
-        // Keeps the settings-panel picker and the on-timer-page picker in sync
         function setAlarmSound(name) {
             state.alarmSound = name;
             alarmSoundSelect.value = name;
@@ -1996,7 +2090,6 @@
         }
 
         function setupEventListeners() {
-            // Settings
             settingsBtn.addEventListener('click', () => {
                 settingsPanel.classList.add('open');
                 todoPanel.classList.remove('open');
@@ -2007,7 +2100,6 @@
                 settingsPanel.classList.remove('open');
             });
 
-            // Gradient
             gradientToggle.addEventListener('click', () => {
                 state.gradientOn = !state.gradientOn;
                 updateGradientToggle();
@@ -2032,7 +2124,6 @@
                 });
             });
 
-            // Time settings
             secondsToggle.addEventListener('click', () => {
                 state.showSeconds = !state.showSeconds;
                 updateSecondsToggle();
@@ -2042,6 +2133,25 @@
             dateToggle.addEventListener('click', () => {
                 state.showDate = !state.showDate;
                 updateDateToggle();
+                saveSettings();
+            });
+
+            // Time Progress Settings Toggles
+            document.getElementById('dayProgressToggle').addEventListener('click', () => {
+                state.showDayProgress = !state.showDayProgress;
+                updateProgressVisibility();
+                saveSettings();
+            });
+
+            document.getElementById('weekProgressToggle').addEventListener('click', () => {
+                state.showWeekProgress = !state.showWeekProgress;
+                updateProgressVisibility();
+                saveSettings();
+            });
+
+            document.getElementById('yearProgressToggle').addEventListener('click', () => {
+                state.showYearProgress = !state.showYearProgress;
+                updateProgressVisibility();
                 saveSettings();
             });
 
@@ -2055,7 +2165,6 @@
                 saveSettings();
             });
 
-            // Alarm sound (settings panel picker + on-timer-page picker, kept in sync)
             alarmSoundSelect.addEventListener('change', (e) => {
                 setAlarmSound(e.target.value);
             });
@@ -2073,7 +2182,6 @@
             previewAlarmBtn.addEventListener('click', previewSelectedSound);
             timerPreviewAlarmBtn.addEventListener('click', previewSelectedSound);
 
-            // Mode controls
             document.querySelectorAll('.mode-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
                     selectMode(btn.dataset.mode);
@@ -2081,7 +2189,6 @@
                 });
             });
 
-            // Timer
             timerPlayBtn.addEventListener('click', toggleTimer);
             timerResetBtnNew.addEventListener('click', resetTimerNew);
 
@@ -2093,25 +2200,20 @@
 
             [hoursInput, minutesInput, secondsInput].forEach(input => {
                 input.addEventListener('focus', () => input.select());
-
                 input.addEventListener('input', () => {
                     input.value = input.value.replace(/\D/g, '').slice(0, 2);
                 });
-
                 input.addEventListener('change', () => {
                     refreshTimerFromInputs();
                 });
-
                 input.addEventListener('blur', () => {
                     refreshTimerFromInputs();
                 });
-
                 input.addEventListener('keydown', (e) => {
                     if (e.key === 'Enter') input.blur();
                 });
             });
 
-            // To-do panel
             tasksBtn.addEventListener('click', () => {
                 todoPanel.classList.add('open');
                 settingsPanel.classList.remove('open');
@@ -2151,7 +2253,6 @@
                 hideClearConfirm();
             });
 
-            // Mouse activity
             document.addEventListener('mousemove', showControls);
             document.addEventListener('click', (e) => {
                 if (
@@ -2163,7 +2264,6 @@
                 }
             });
 
-            // Extra safety save when the tab is hidden/closed or the page unloads
             document.addEventListener('visibilitychange', () => {
                 if (document.visibilityState === 'hidden') saveTasks();
             });
@@ -2238,23 +2338,30 @@
             }
         }
 
+        function updateProgressVisibility() {
+            document.getElementById('dayProgressWrap').classList.toggle('active', state.showDayProgress);
+            document.getElementById('weekProgressWrap').classList.toggle('active', state.showWeekProgress);
+            document.getElementById('yearProgressWrap').classList.toggle('active', state.showYearProgress);
+
+            const dayBtn = document.getElementById('dayProgressToggle');
+            const weekBtn = document.getElementById('weekProgressToggle');
+            const yearBtn = document.getElementById('yearProgressToggle');
+
+            if (dayBtn) dayBtn.classList.toggle('on', state.showDayProgress);
+            if (weekBtn) weekBtn.classList.toggle('on', state.showWeekProgress);
+            if (yearBtn) yearBtn.classList.toggle('on', state.showYearProgress);
+        }
+
         function applySettings() {
-            // Apply theme
             selectTheme(state.theme);
-
-            // Apply font
             selectFont(state.font);
-
-            // Apply background
             applyThemeBackground();
-
-            // Apply toggles
             updateSecondsToggle();
             updateDateToggle();
             updateGradientToggle();
             updateGradientMovementToggle();
+            updateProgressVisibility();
 
-            // Apply selects
             timeFormatSelect.value = state.timeFormat;
             timezoneSelect.value = state.timezone;
             if (!ALARM_SOUNDS.some(s => s.name === state.alarmSound)) {
@@ -2303,23 +2410,52 @@
             } else {
                 dateDisplay.textContent = '';
             }
+
+            updateTimeProgress(now);
+        }
+
+        // Calculates elapsed percentage for Day, Week, and Year
+        function updateTimeProgress(now) {
+            const secondsInDay = 86400;
+            const elapsedSeconds = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
+            const dayPct = Math.min(100, Math.max(0, (elapsedSeconds / secondsInDay) * 100));
+
+            const dayOfWeek = (now.getDay() + 6) % 7;
+            const secondsInWeek = 7 * 86400;
+            const elapsedWeekSeconds = (dayOfWeek * 86400) + elapsedSeconds;
+            const weekPct = Math.min(100, Math.max(0, (elapsedWeekSeconds / secondsInWeek) * 100));
+
+            const startOfYear = new Date(now.getFullYear(), 0, 1, 0, 0, 0, 0);
+            const endOfYear = new Date(now.getFullYear() + 1, 0, 1, 0, 0, 0, 0);
+            const yearPct = Math.min(100, Math.max(0, ((now - startOfYear) / (endOfYear - startOfYear)) * 100));
+
+            if (state.showDayProgress) {
+                document.getElementById('dayProgressVal').textContent = `${dayPct.toFixed(1)}%`;
+                document.getElementById('dayProgressBar').style.width = `${dayPct}%`;
+            }
+            if (state.showWeekProgress) {
+                document.getElementById('weekProgressVal').textContent = `${weekPct.toFixed(1)}%`;
+                document.getElementById('weekProgressBar').style.width = `${weekPct}%`;
+            }
+            if (state.showYearProgress) {
+                document.getElementById('yearProgressVal').textContent = `${yearPct.toFixed(1)}%`;
+                document.getElementById('yearProgressBar').style.width = `${yearPct}%`;
+            }
         }
 
         const RING_RADIUS = 140;
         const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
-        const RING_CONTENT_RATIO = 0.9; // fraction of the ring's diameter the digits are allowed to use, leaving clear space before the ring line
+        const RING_CONTENT_RATIO = 0.9;
 
         function sizeTimerRing() {
             const col = document.querySelector('.timer-units-col');
             const wrap = document.querySelector('.timer-ring-wrap');
             if (!col || !wrap) return;
 
-            // Disable the transition and reset scale, then force a reflow so we measure
-            // the digits' true natural size instead of a mid-transition (stale) size
             const prevTransition = col.style.transition;
             col.style.transition = 'none';
             col.style.transform = 'scale(1)';
-            void col.offsetWidth; // forces the browser to apply the above before we measure
+            void col.offsetWidth;
 
             const maxAllowed = Math.min(window.innerWidth * 0.8, window.innerHeight * 0.68);
             const diameter = Math.min(Math.max(maxAllowed, 220), 460);
@@ -2333,11 +2469,8 @@
             }
             const diagonal = Math.sqrt(rect.width * rect.width + rect.height * rect.height);
             const budget = diameter * RING_CONTENT_RATIO;
-
-            // Only ever shrink (never enlarge) the digits so they always stay fully inside the ring
             const scale = diagonal > budget ? budget / diagonal : 1;
 
-            // Restore the transition, then apply the real target scale so it animates smoothly
             col.style.transition = prevTransition;
             col.style.transform = `scale(${scale})`;
         }
@@ -2418,13 +2551,9 @@
         }
 
         function toggleTimer() {
-            // Any direct click on the play/pause button is a genuine user gesture,
-            // so this is a safe place to create/unlock the audio context for later use.
             ensureAudioCtx();
 
             if (state.timerAlarming) {
-                // If the alarm is currently ringing, treat this as acknowledging it
-                // and starting a fresh countdown rather than "pausing" a finished timer.
                 stopAlarm();
                 startTimerNew();
                 return;
@@ -2499,8 +2628,6 @@
             document.title = title;
         }
 
-        // ===== Alarm sound (Web Audio API — no external audio files needed) =====
-
         function ensureAudioCtx() {
             if (!audioCtx) {
                 const AC = window.AudioContext || window.webkitAudioContext;
@@ -2532,13 +2659,9 @@
             return ALARM_SOUNDS.find(s => s.name === state.alarmSound) || ALARM_SOUNDS[0];
         }
 
-        // Starts looping the selected alarm sound. Keeps playing (repeating every
-        // `period` ms) until stopAlarm() is called — which currently only happens
-        // when the reset button is pressed (or a fresh timer is started from the
-        // alarm state).
         function startAlarm() {
             const ctx = ensureAudioCtx();
-            if (!ctx) return; // Web Audio unsupported — fail silently, visuals still show
+            if (!ctx) return;
             stopAlarm();
 
             state.timerAlarming = true;
@@ -2561,23 +2684,18 @@
             ringProgress.classList.remove('alarm-pulse');
         }
 
-        // ===== To-Do List logic =====
-
         const CHECK_SVG = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
         const FLAG_SVG = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M5 3v18h1.5v-6.5h9.7l-1.4-3.25L16.2 8H6.5V3H5z"/></svg>';
         const HANDLE_SVG = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="7" x2="20" y2="7"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="17" x2="20" y2="17"></line></svg>';
         const TRASH_SVG = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"></path></svg>';
 
         let pendingDeleteId = null;
-
-        // Drag-to-reorder state (used only for the non-overdue, non-completed "Tasks" section)
         let dragSrcId = null;
 
         function isOverdue(task) {
             return !task.completed && task.due && new Date(task.due).getTime() < Date.now();
         }
 
-        // Shows just the time if the due date is today, otherwise a short weekday + time
         function formatDueLabel(dueISO) {
             const due = new Date(dueISO);
             const timeStr = due.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
@@ -2612,8 +2730,6 @@
                     dueLine = `<div class="task-due ${tierClass}">Due ${label}</div>`;
                 }
             }
-            // Only tasks in the plain "Tasks" section (not overdue, not completed) are
-            // reorderable, so only they get the drag handle + draggable card.
             const sideIcon = task.completed
                 ? ''
                 : (overdue
@@ -2638,8 +2754,6 @@
             return div.innerHTML;
         }
 
-        // Ranks non-overdue, due-bearing tasks from soonest to latest and buckets them
-        // into three color tiers: red (soonest), orange (middle), green (latest).
         function computeDueTiers(dueTasks) {
             const sorted = [...dueTasks].sort((a, b) => new Date(a.due) - new Date(b.due));
             const tierMap = {};
@@ -2706,15 +2820,11 @@
             updateProgress();
         }
 
-        // Wires up drag-and-drop reordering for cards that have a drag handle
-        // (i.e. non-overdue, non-completed tasks in the "Tasks" section).
         function setupDragHandlers() {
             todoBody.querySelectorAll('.task-card').forEach(card => {
                 const handle = card.querySelector('.task-drag-handle');
                 if (!handle) return;
 
-                // Only let the drag start from the handle itself, not the whole card,
-                // so normal clicks (checkbox, delete, etc.) still work as usual.
                 const enableDrag = () => { card.draggable = true; };
                 handle.addEventListener('mousedown', enableDrag);
                 handle.addEventListener('touchstart', enableDrag, { passive: true });
@@ -2767,8 +2877,6 @@
             });
         }
 
-        // Moves the dragged task to sit just before/after the drop target within
-        // the underlying tasks array, then re-renders.
         function reorderTasks(srcId, targetId, dropAfter) {
             const srcIdx = tasks.findIndex(t => t.id === srcId);
             if (srcIdx === -1) return;
@@ -2813,7 +2921,6 @@
             clearTasksBtn.classList.remove('hidden');
         }
 
-        // Step 1: capture the task name, then move to the "pick a due date" step
         function startAddTask() {
             const name = newTaskInput.value.trim();
             if (!name) return;
@@ -2856,7 +2963,6 @@
             newTaskTimeInput.focus();
         }
 
-        // Date sub-step: Skip drops the due date entirely; Next moves on to picking a time
         function skipDueDate() {
             finalizeNewTask(null, null);
         }
@@ -2875,7 +2981,6 @@
             showTimeSubStep();
         }
 
-        // Time sub-step: Skip keeps the date with a default end-of-day time; Set uses the chosen time
         function skipDueTime() {
             finalizeNewTask(pendingDueDateStr, null);
         }
@@ -2931,7 +3036,6 @@
             todoProgressFill.style.width = `${pct}%`;
         }
 
-        // Start
         init();
     </script>
 </body>
