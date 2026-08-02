@@ -65,8 +65,14 @@
         .clock-display {
             text-align: center;
             z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 250px;
         }
 
+        /* ===== Base Time Display ===== */
         .time {
             font-size: 12vw;
             font-weight: 300;
@@ -76,6 +82,81 @@
             margin: 0;
             font-variant-numeric: tabular-nums;
             text-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        /* ===== Clock Styles ===== */
+        /* 1. Minimal */
+        .clock-display.style-minimal .time {
+            font-size: 10vw;
+            font-weight: 200;
+            letter-spacing: 0.02em;
+        }
+
+        /* 2. Large Centered */
+        .clock-display.style-large .time {
+            font-size: 17vw;
+            font-weight: 700;
+            letter-spacing: -0.04em;
+            text-transform: uppercase;
+            line-height: 0.9;
+        }
+
+        /* 3. Flip Clock */
+        .clock-display.style-flip .time {
+            display: inline-flex;
+            align-items: center;
+            gap: 1.5vw;
+            font-size: 8.5vw;
+            font-weight: 600;
+            font-family: 'Roboto Mono', monospace;
+        }
+
+        .flip-card {
+            background: var(--bg-secondary);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            padding: 0.15em 0.28em;
+            box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.15);
+            position: relative;
+            backdrop-filter: blur(10px);
+        }
+
+        .flip-card::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 50%;
+            height: 1px;
+            background: rgba(0, 0, 0, 0.25);
+        }
+
+        .flip-sep {
+            opacity: 0.5;
+            font-weight: 300;
+        }
+
+        /* 4. Vintage Clock */
+        .clock-display.style-vintage .time {
+            font-family: 'Playfair Display', serif;
+            font-size: 11vw;
+            font-weight: 400;
+            letter-spacing: 0.05em;
+            padding: 0.2em 0.6em;
+            border-top: 2px solid var(--text-secondary);
+            border-bottom: 2px solid var(--text-secondary);
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+        }
+
+        /* 5. Word Clock */
+        .clock-display.style-word .time {
+            font-size: 5.5vw;
+            font-weight: 600;
+            line-height: 1.25;
+            max-width: 80vw;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
         }
 
         .date {
@@ -1476,7 +1557,7 @@
 </head>
 <body>
     <div class="container">
-        <div class="clock-display" id="clockDisplay">
+        <div class="clock-display style-minimal" id="clockDisplay">
             <p class="time" id="time">00:00:00</p>
             <p class="date" id="date"></p>
             
@@ -1626,6 +1707,16 @@
 
         <div class="settings-section">
             <h3>Time</h3>
+            <div class="select-group">
+                <label class="select-label">Clock Style</label>
+                <select id="clockStyleSelect">
+                    <option value="minimal">Minimal Digital</option>
+                    <option value="large">Large Centered</option>
+                    <option value="flip">Flip Clock</option>
+                    <option value="vintage">Vintage</option>
+                    <option value="word">Word Clock</option>
+                </select>
+            </div>
             <div class="toggle-group">
                 <button class="toggle" id="secondsToggle"></button>
                 <label class="toggle-label">Show Seconds</label>
@@ -1812,11 +1903,11 @@
             }
         ];
 
-        // State (updated with Time Progress toggle settings)
         const state = {
             mode: 'clock',
             theme: 'Midnight',
             font: 'Inter',
+            clockStyle: 'minimal',
             showSeconds: true,
             showDate: true,
             timeFormat: '12',
@@ -1862,6 +1953,7 @@
         const gradientMovementToggle = document.getElementById('gradientMovementToggle');
         const secondsToggle = document.getElementById('secondsToggle');
         const dateToggle = document.getElementById('dateToggle');
+        const clockStyleSelect = document.getElementById('clockStyleSelect');
         const timeFormatSelect = document.getElementById('timeFormatSelect');
         const timezoneSelect = document.getElementById('timezoneSelect');
         const alarmSoundSelect = document.getElementById('alarmSoundSelect');
@@ -1948,6 +2040,7 @@
                 const toSave = {
                     theme: state.theme,
                     font: state.font,
+                    clockStyle: state.clockStyle,
                     showSeconds: state.showSeconds,
                     showDate: state.showDate,
                     timeFormat: state.timeFormat,
@@ -2136,7 +2229,12 @@
                 saveSettings();
             });
 
-            // Time Progress Settings Toggles
+            clockStyleSelect.addEventListener('change', (e) => {
+                state.clockStyle = e.target.value;
+                updateClockStyle();
+                saveSettings();
+            });
+
             document.getElementById('dayProgressToggle').addEventListener('click', () => {
                 state.showDayProgress = !state.showDayProgress;
                 updateProgressVisibility();
@@ -2338,6 +2436,10 @@
             }
         }
 
+        function updateClockStyle() {
+            clockDisplayEl.className = `clock-display style-${state.clockStyle}`;
+        }
+
         function updateProgressVisibility() {
             document.getElementById('dayProgressWrap').classList.toggle('active', state.showDayProgress);
             document.getElementById('weekProgressWrap').classList.toggle('active', state.showWeekProgress);
@@ -2361,7 +2463,9 @@
             updateGradientToggle();
             updateGradientMovementToggle();
             updateProgressVisibility();
+            updateClockStyle();
 
+            clockStyleSelect.value = state.clockStyle;
             timeFormatSelect.value = state.timeFormat;
             timezoneSelect.value = state.timezone;
             if (!ALARM_SOUNDS.some(s => s.name === state.alarmSound)) {
@@ -2377,6 +2481,34 @@
             }
         }
 
+        // Transforms digital time into spoken English phrases
+        function timeToWords(h, m) {
+            const words = [
+                'twelve', 'one', 'two', 'three', 'four', 'five', 'six', 
+                'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve', 
+                'thirteen', 'fourteen', 'quarter', 'sixteen', 'seventeen', 
+                'eighteen', 'nineteen', 'twenty', 'twenty-one', 'twenty-two', 
+                'twenty-three', 'twenty-four', 'twenty-five', 'twenty-six', 
+                'twenty-seven', 'twenty-eight', 'twenty-nine', 'half'
+            ];
+            const hour12 = h % 12 || 12;
+            const nextHour = (h + 1) % 12 || 12;
+
+            if (m === 0) return `It's ${words[hour12]} o'clock`;
+            if (m === 15) return `It's a quarter past ${words[hour12]}`;
+            if (m === 30) return `It's half past ${words[hour12]}`;
+            if (m === 45) return `It's a quarter to ${words[nextHour]}`;
+
+            if (m < 30) {
+                const minLabel = m === 1 ? 'minute' : 'minutes';
+                return `It's ${words[m]} ${minLabel} past ${words[hour12]}`;
+            } else {
+                const rem = 60 - m;
+                const minLabel = rem === 1 ? 'minute' : 'minutes';
+                return `It's ${words[rem]} ${minLabel} to ${words[nextHour]}`;
+            }
+        }
+
         function displayClock() {
             let now;
             if (state.timezone === 'local') {
@@ -2389,19 +2521,38 @@
             let minutes = now.getMinutes();
             let seconds = now.getSeconds();
 
-            let timeStr;
-            if (state.timeFormat === '12') {
-                const ampm = hours >= 12 ? 'PM' : 'AM';
-                hours = hours % 12 || 12;
-                timeStr = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
-                if (state.showSeconds) timeStr += `:${String(seconds).padStart(2, '0')}`;
-                timeStr += ` ${ampm}`;
+            const hrStr = String(state.timeFormat === '12' ? (hours % 12 || 12) : hours).padStart(2, '0');
+            const minStr = String(minutes).padStart(2, '0');
+            const secStr = String(seconds).padStart(2, '0');
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+
+            let timeStr = `${hrStr}:${minStr}`;
+            if (state.showSeconds) timeStr += `:${secStr}`;
+            if (state.timeFormat === '12') timeStr += ` ${ampm}`;
+
+            // Render Time Based on Active Style
+            if (state.clockStyle === 'flip') {
+                let html = `
+                    <div class="flip-card"><span>${hrStr}</span></div>
+                    <span class="flip-sep">:</span>
+                    <div class="flip-card"><span>${minStr}</span></div>
+                `;
+                if (state.showSeconds) {
+                    html += `
+                        <span class="flip-sep">:</span>
+                        <div class="flip-card"><span>${secStr}</span></div>
+                    `;
+                }
+                if (state.timeFormat === '12') {
+                    html += `<span style="font-size: 0.35em; margin-left: 0.4vw; font-weight: 500;">${ampm}</span>`;
+                }
+                timeDisplay.innerHTML = html;
+            } else if (state.clockStyle === 'word') {
+                timeDisplay.textContent = timeToWords(hours, minutes);
             } else {
-                timeStr = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
-                if (state.showSeconds) timeStr += `:${String(seconds).padStart(2, '0')}`;
+                timeDisplay.textContent = timeStr;
             }
 
-            timeDisplay.textContent = timeStr;
             updateTabTitle(timeStr);
 
             if (state.showDate) {
@@ -2414,7 +2565,6 @@
             updateTimeProgress(now);
         }
 
-        // Calculates elapsed percentage for Day, Week, and Year
         function updateTimeProgress(now) {
             const secondsInDay = 86400;
             const elapsedSeconds = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
