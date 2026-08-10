@@ -2474,6 +2474,7 @@
 
         let audioCtx = null;
         let alarmIntervalId = null;
+        let titleHeartbeatId = null;
 
         // DOM Elements
         const timeDisplay = document.getElementById('time');
@@ -2569,6 +2570,16 @@
             }
 
             setupPaperPanel();
+
+            // Interval-based heartbeat keeps the tab title updating for the
+            // running timer even in a background tab, where browsers
+            // throttle or fully pause requestAnimationFrame callbacks.
+            titleHeartbeatId = setInterval(updateTimerTabTitleFromClock, 250);
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'visible') {
+                    updateTimerTabTitleFromClock();
+                }
+            });
         }
 
         function loadSettings() {
@@ -3334,6 +3345,27 @@
             }
 
             requestAnimationFrame(animateRing);
+        }
+
+        // Independent of requestAnimationFrame so it keeps firing on a
+        // background/inactive tab (setInterval is throttled to roughly
+        // once per second there, not paused outright like rAF is).
+        // Recomputes the remaining time straight from timerEndAt, so it
+        // stays accurate even if rAF hasn't ticked in a while.
+        function updateTimerTabTitleFromClock() {
+            if (state.mode !== 'timer') return;
+            if (state.timerAlarming) {
+                document.title = '✓ Timer Complete';
+                return;
+            }
+            if (!state.timerRunning) return;
+
+            const remainingMs = Math.max(0, state.timerEndAt - Date.now());
+            const remainingSeconds = Math.ceil(remainingMs / 1000);
+            const h = Math.floor(remainingSeconds / 3600);
+            const m = Math.floor((remainingSeconds % 3600) / 60);
+            const s = remainingSeconds % 60;
+            updateTabTitle(`Timer ${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`);
         }
 
         function updateTabTitle(title) {
