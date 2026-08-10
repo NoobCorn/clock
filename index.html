@@ -3600,9 +3600,22 @@
 
         function renderTasks() {
             const active = tasks.filter(t => !t.completed);
-            const overdueTasks = active.filter(isOverdue);
-            const otherTasks = active.filter(t => !isOverdue(t));
-            const completedTasks = tasks.filter(t => t.completed);
+            
+            const overdueTasks = active.filter(isOverdue).sort((a, b) => new Date(a.due) - new Date(b.due));
+            
+            const otherTasks = active.filter(t => !isOverdue(t)).sort((a, b) => {
+                if (a.due && b.due) return new Date(a.due) - new Date(b.due);
+                if (a.due) return -1;
+                if (b.due) return 1;
+                return 0;
+            });
+            
+            const completedTasks = tasks.filter(t => t.completed).sort((a, b) => {
+                if (a.due && b.due) return new Date(a.due) - new Date(b.due);
+                if (a.due) return -1;
+                if (b.due) return 1;
+                return 0;
+            });
 
             const tierMap = computeDueTiers(otherTasks.filter(t => t.due));
 
