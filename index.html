@@ -1742,7 +1742,7 @@
             font-weight: 400;
             max-width: 620px;
         }
-
+        
         .paper-question-card {
             background: rgba(255, 255, 255, 0.06);
             border: 1px solid rgba(255, 255, 255, 0.12);
@@ -2266,6 +2266,14 @@
                         the thinking, then explore the clock, timer, and tasks to see it in practice.
                     </p>
 
+                    <section class="paper-section">
+                        <h2>Final Direction</h2>
+                        <p>
+                            This project is staying focused on one idea: using a clock as a calmer starting point for work. Rather than becoming another productivity dashboard, the app keeps the clock at the center and makes tasks, timers, and customization optional.
+                        </p>
+                    </section>
+                    <hr class="paper-divider">
+
                     <div class="paper-question-card">
                         <div class="paper-question-label">Research Question</div>
                         <div class="paper-question-text">How can the design of a productivity tool help users feel less stressed when starting a task?</div>
@@ -2274,15 +2282,10 @@
                     <section class="paper-section">
                         <h2>Why This Matters</h2>
                         <p>
-                            Many productivity apps overload users with notifications, long task lists, streaks,
-                            deadlines, and visual clutter. These features are usually meant to motivate, but
-                            they can unintentionally increase stress instead of helping people begin. A screen
-                            full of red badges and overdue reminders can make starting a task feel heavier than
-                            the task itself.
+                            Many productivity apps overload users with notifications, long task lists, streaks, deadlines, and visual clutter. These features are usually meant to motivate, but they can unintentionally increase stress instead of helping people begin. Research suggests that interrupted work leads to higher stress, higher frustration, and increased effort. Furthermore, procrastination is often closely tied to short-term mood regulation—a screen full of red badges and overdue reminders can make starting a task feel heavier, leading to avoidance. Conversely, strategies like batching notifications have been shown to improve psychological well-being.
                         </p>
                         <p>
-                            This project explores whether a calmer interface — one that leads with time and
-                            presence rather than pressure — can lower the barrier to starting work.
+                            This project explores whether a calmer interface — one that leads with time and presence rather than pressure — could lower the barrier to starting work.
                         </p>
                     </section>
                     <hr class="paper-divider">
@@ -2298,12 +2301,20 @@
                     <hr class="paper-divider">
 
                     <section class="paper-section">
+                        <h2>Real Trace That Shaped the Direction</h2>
+                        <p>
+                            In an earlier version of the paper, I identified that many productivity apps show overdue reminders, notifications, badges, and crowded task lists before users even begin working. This led me toward a calmer interface where the clock is the default and productivity tools are optional. The current implementation reflects that decision through the large centered clock, hidden controls, and optional timer/tasks.
+                        </p>
+                    </section>
+                    <hr class="paper-divider">
+
+                    <section class="paper-section">
                         <h2>Interpretation</h2>
                         <p>
                             A simpler interface that focuses on the present moment, time awareness, and optional
                             productivity tools may reduce the mental effort required to begin working. If the
                             default view is calm, any additional structure — like a task list or timer — becomes
-                            something the user opts into, rather than something imposed on them.
+                            something the user opts into, rather than something imposed on them. This aligns with the principles of Calm Technology, which suggest that technology should require the smallest possible amount of attention and inform without demanding focus.
                         </p>
                     </section>
                     <hr class="paper-divider">
@@ -2349,6 +2360,30 @@
                     <hr class="paper-divider">
 
                     <section class="paper-section">
+                        <h2>What I Deliberately Left Out</h2>
+                        <p>
+                            I deliberately left out a full productivity dashboard with constantly visible tasks, reminders, statistics, and other widgets. Although these features could make the app more powerful, they would compete with the clock and recreate the visual pressure that the project is investigating.
+                        </p>
+                    </section>
+                    <hr class="paper-divider">
+
+                    <section class="paper-section">
+                        <h2>Design Tension: The Task Panel</h2>
+                        <p>
+                            One particularly interesting design tension in my app is the contrast between the default state and the task list. The opening screen is intentionally calm and minimal, but the optional task panel can display stressful information such as overdue tasks and red labels. This raises a crucial question: <em>Does hiding stressful information until a user requests it make the overall experience calmer, or does the same pressure return when the task panel opens?</em> The contradiction is useful because it provides a real dynamic to investigate in future testing.
+                        </p>
+                    </section>
+                    <hr class="paper-divider">
+
+                    <section class="paper-section">
+                        <h2>Testing the Design (Proposed)</h2>
+                        <p>
+                            The next step is a small informal test with people who have not previously used the app. The proposed test involves asking a few people to begin a five-minute work session and add one task. I will observe where they hesitate or seem confused. Afterwards, I will ask them to rate their mental effort, frustration, and comfort beginning the task. These dimensions are my own simplified ratings inspired by the NASA-TLX framework for measuring perceived workload.
+                        </p>
+                    </section>
+                    <hr class="paper-divider">
+
+                    <section class="paper-section">
                         <h2>Limitation</h2>
                         <p>
                             This project has only been tested informally, largely through personal use and
@@ -2360,12 +2395,30 @@
                     <hr class="paper-divider">
 
                     <section class="paper-section">
-                        <h2>Next Steps</h2>
+                        <h2>Project Direction (Session 10)</h2>
+                        <p><strong>My paper-app now lets a reader…</strong> experience a minimalist clock and optional productivity tools while reading the research and design reasoning behind the interface.</p>
+                        <p><strong>The question or experience at its center is…</strong> How can the design of a productivity tool help users feel less stressed when starting a task?</p>
+                        <p><strong>I reached this direction after…</strong> exploring how traditional productivity tools can create pressure through notifications, deadlines, crowded task lists, and reminders. I decided that the clock should create a calmer starting point instead of immediately showing users everything they need to accomplish.</p>
+                        <p><strong>I am keeping…</strong> the large centered clock, minimal default interface, hidden settings, and optional timer/task features.</p>
+                        <p><strong>I am cutting or leaving behind…</strong> the idea of turning the project into a full-featured productivity dashboard because that would work against the central idea of reducing pressure.</p>
+                        <p><strong>Before I present, I still need to finish only…</strong> final bug fixes, accessibility checks, source and AI credits, GitHub cleanup, and presentation preparation.</p>
+                    </section>
+                    <hr class="paper-divider">
+
+                    <section class="paper-section">
+                        <h2>Session 11 — Finish List</h2>
                         <ul class="paper-list">
-                            <li>Conduct structured user testing with a wider group of participants.</li>
-                            <li>Compare this interface against traditional, notification-heavy to-do apps.</li>
-                            <li>Measure whether users begin tasks more quickly with a calmer starting screen.</li>
-                            <li>Measure perceived stress before and after using the app, using a simple self-report scale.</li>
+                            <li>Fix remaining bugs</li>
+                            <li>Test clock, timer, tasks, and settings</li>
+                            <li>Check mobile/responsive behavior</li>
+                            <li>Check keyboard accessibility</li>
+                            <li>Check readable contrast and text</li>
+                            <li>Verify sources and citations</li>
+                            <li>Verify AI credits</li>
+                            <li>Clean up GitHub repository</li>
+                            <li>Confirm GitHub Pages works</li>
+                            <li>Prepare presentation</li>
+                            <li>Practice explaining the central question and design decisions</li>
                         </ul>
                     </section>
                     <hr class="paper-divider">
@@ -2384,11 +2437,22 @@
                     <section class="paper-section">
                         <h2>References</h2>
                         <ul class="paper-references">
-                            <li>Author, A. (Year). Title of the source on productivity and stress. Publisher / Journal Name.</li>
-                            <li>Author, B. (Year). Title of the source on minimalist interface design. Publisher / Journal Name.</li>
-                            <li>Author, C. (Year). Title of the source on notification overload and attention. Publisher / Journal Name.</li>
-                            <li>Author, D. (Year). Title of the source on task-initiation and procrastination. Publisher / Journal Name.</li>
+                            <li>Weiser, M., & Brown, J. S. (1995). Designing Calm Technology. Calmtech.com.</li>
+                            <li>Mark, G., Gudith, D., & Klocke, U. (2008). The Cost of Interrupted Work: More Speed and Stress. CHI 2008 Proceedings.</li>
+                            <li>Fitz, N., et al. (2019). Batching Smartphone Notifications Can Improve Well-Being. Computers in Human Behavior.</li>
+                            <li>Sirois, F., & Pychyl, T. (2013). Procrastination and the Priority of Short-Term Mood Regulation. Social and Personality Psychology Compass.</li>
+                            <li>Hart, S. G., & Staveland, L. E. (1988). NASA Task Load Index (TLX). NASA Human Systems Integration Division.</li>
                         </ul>
+                    </section>
+                    <hr class="paper-divider">
+
+                    <section class="paper-section">
+                        <h2>Credits & Responsibility</h2>
+                        <p><strong>AI contribution:</strong> AI tools contributed to brainstorming, research organization, code generation/revision, and editing suggestions.</p>
+                        <p><strong>Other sources:</strong> Research sources are listed in the References section and are used to support specific claims.</p>
+                        <p><strong>My choice:</strong> I chose to keep the clock as the central experience and make productivity features optional rather than turning the project into a full productivity dashboard.</p>
+                        <p><strong>What I checked:</strong> I checked the interface functionality, the relationship between the research and design choices, and the accuracy/relevance of the cited sources.</p>
+                        <p><strong>What I remain responsible for:</strong> I remain responsible for the final design, project decisions, testing, source use, credits, code review, and presentation.</p>
                     </section>
 
                     <div class="paper-footer-space"></div>
@@ -3603,6 +3667,7 @@
             
             const overdueTasks = active.filter(isOverdue).sort((a, b) => new Date(a.due) - new Date(b.due));
             
+            // Note: The logic below explicitly places tasks with due dates before those without, sorting them chronologically.
             const otherTasks = active.filter(t => !isOverdue(t)).sort((a, b) => {
                 if (a.due && b.due) return new Date(a.due) - new Date(b.due);
                 if (a.due) return -1;
