@@ -2262,8 +2262,19 @@
                     <h1 class="paper-title">Designing for a Calmer Start</h1>
                     <p class="paper-intro">
                         This site is a paper-app: an interactive clock and productivity tool paired with the
-                        research behind its design. The interface itself is the experiment — read on to see
-                        the thinking, then explore the clock, timer, and tasks to see it in practice.
+                        research behind its design. The clock is the main experience, while the timer, tasks,
+                        and settings remain available when the user chooses them.
+                    </p>
+                    <p>
+                        The project began with a simple question: <b>How can the design of a productivity
+                        tool help users feel less stressed when starting a task?</b>
+                    </p>
+                    <p>
+                        Instead of trying to build the most powerful productivity system possible, I focused
+                        on what a user encounters before they start working. My design puts the current time
+                        at the center and moves additional information into optional panels. The goal is not
+                        to eliminate deadlines or make work disappear. It is to investigate wheter changing
+                        what demands attention first can change the experience of beginning of a task.
                     </p>
 
                     <div class="paper-question-card">
@@ -2274,15 +2285,36 @@
                     <section class="paper-section">
                         <h2>Why This Matters</h2>
                         <p>
-                            Many productivity apps overload users with notifications, long task lists, streaks,
-                            deadlines, and visual clutter. These features are usually meant to motivate, but
-                            they can unintentionally increase stress instead of helping people begin. A screen
-                            full of red badges and overdue reminders can make starting a task feel heavier than
-                            the task itself.
+                            Many productivity interfaces are designed to show users what needs to be done: 
+                            tasks, deadlines, reminders, notifications, progress, and overdue items. These
+                            features can be useful, but they also determine what enters a user's attention
+                            first.
                         </p>
                         <p>
-                            This project explores whether a calmer interface — one that leads with time and
-                            presence rather than pressure — can lower the barrier to starting work.
+                            This matters because attention is not unlimited. Weiser and Brown's work on calm
+                            technology describes a different approach: technology can inform people from the
+                            periphery of their attention without constantly demanding that everything become
+                            the center of attention. they argue that calm technology should allow information
+                            to move between the cneter and periphery while leaving the individual in control
+                            of that movement.
+                        </p>
+                        <p>
+                            This connects to my interface. The clock is immediately visible, while tasks,
+                            timer controls, and settings can remain secondary until the user chooses to
+                            bring them forward.
+                        </p>
+                        <p>
+                            However, this does not mean that less information is always better. Fitz et al's
+                            randomized field experiment on smartphone notifications found that batching 
+                            notifications three times a day improved several measures of attention and well-
+                            being compared with normal notifications, while completely turning notifications
+                            off produced different results, including increased anxiety and fear of missing
+                            out.
+                        </p>
+                        <p>
+                            This suggests that the design question is more complicated than simply asking
+                            whether information should exist. A better question is when information should
+                            demand attention and who controls that.
                         </p>
                     </section>
                     <hr class="paper-divider">
@@ -2290,9 +2322,19 @@
                     <section class="paper-section">
                         <h2>Observation</h2>
                         <p>
-                            Many productivity apps display overdue reminders, badges, notifications, and
-                            crowded task lists before users even begin working. The first thing a person sees
-                            when opening the app is often a signal that they are already behind.
+                            When I looked at common productivity interfaces and earlier versions of my own
+                            project, I noteced how quickly a screen can become a list of obligations. A 
+                            user may see an overdue task, a deadline, a notification, or several unfinished
+                            items before doing anything else.
+                        </p>
+                        <p>
+                            My response was to make the opening screen simple. Instead of beginning with the
+                            things that need to be completed, the user begins with the current time.
+                        </p>
+                        <p>
+                            The important distinction is that the app does not remove the user's tasks. It
+                            changes their position in the interface. The tasks, timer, and settings all 
+                            exist. But they do not have to be the first thing the user sees.
                         </p>
                     </section>
                     <hr class="paper-divider">
@@ -2310,39 +2352,25 @@
 
                     <section class="paper-section">
                         <h2>Design Decisions</h2>
-                        <p>Each choice in this clock supports the research question above.</p>
                         <div class="paper-cards-grid">
                             <div class="paper-design-card">
-                                <h4>Large Centered Clock</h4>
-                                <p>Gives the eye one calm focal point, anchoring the user in the present moment rather than a list of obligations.</p>
+                                <h4>The Clock Is the Center</h4>
+                                <p>The clock is the largest and most visually dominant element.</p>
+                                <p>The decision came from the idea of moving secondary information toward the periphery. The intention is to give users a clear starting point.</p>
                             </div>
                             <div class="paper-design-card">
-                                <h4>Minimal Interface</h4>
-                                <p>Only the time is shown by default, reducing visual clutter and the sense of being overwhelmed on arrival.</p>
+                                <h4>Tools Are Optional</h4>
+                                <p>The timer, tasks, and settings are availale, but they do not dominate the opening screen.</p>
+                                <p>This creates a choice for the user: the can bring a tool into focus when they need it and return to the simpler clock afterward.</p>
                             </div>
                             <div class="paper-design-card">
-                                <h4>Hidden Settings</h4>
-                                <p>Controls fade away until needed, keeping the screen quiet and putting the user in charge of complexity.</p>
-                            </div>
-                            <div class="paper-design-card">
-                                <h4>Optional Focus Mode</h4>
-                                <p>The timer is available but never forced, so structure is something the user chooses rather than something imposed.</p>
-                            </div>
-                            <div class="paper-design-card">
-                                <h4>Optional Ambient Sounds</h4>
-                                <p>Gentle, non-jarring alarm tones support focus without the harshness typical of default alarms.</p>
-                            </div>
-                            <div class="paper-design-card">
-                                <h4>Dynamic Backgrounds</h4>
-                                <p>Soft gradients and themes let the environment feel personal and pleasant rather than clinical.</p>
+                                <h4>Fewer Unnecessary Interruptions</h4>
+                                <p>The interface avoids turning the main clock screen into a stream of reminders.</p>
+                                <p>My design favors information that the user intentionally opens rather than information that constantly demands attention.</p>
                             </div>
                             <div class="paper-design-card">
                                 <h4>User Customization</h4>
                                 <p>Fonts, themes, and clock styles are adjustable, giving users a sense of ownership over their space.</p>
-                            </div>
-                            <div class="paper-design-card">
-                                <h4>No Unnecessary Notifications</h4>
-                                <p>The app never interrupts unprompted, avoiding the anxiety that comes with constant pings and alerts.</p>
                             </div>
                         </div>
                     </section>
@@ -2384,10 +2412,11 @@
                     <section class="paper-section">
                         <h2>References</h2>
                         <ul class="paper-references">
-                            <li>Author, A. (Year). Title of the source on productivity and stress. Publisher / Journal Name.</li>
-                            <li>Author, B. (Year). Title of the source on minimalist interface design. Publisher / Journal Name.</li>
-                            <li>Author, C. (Year). Title of the source on notification overload and attention. Publisher / Journal Name.</li>
-                            <li>Author, D. (Year). Title of the source on task-initiation and procrastination. Publisher / Journal Name.</li>
+                            <li>"Designing Calm Technology." Xerox PARC, December 21, 1995.</li>
+                            <li>"The Cost of Interrupted Work: More Speed and Stress." Proceedings of the SIGCHI Conference on Human Factors in Computing Systems, 2008.</li>
+                            <li>"Batching Smartphone Notifications Can Improve Well-Being." Computers in Human Behavior, vol. 101, 2019, pp.84-94.</li>
+                            <li>"Procrastination and the Priority of Short-Term Mood Regulation: Consequences for Future Self." Social and Personality Psychology Compas, vol. 7, no. 2, 2013, pp.115-127</li>
+                            <li>"NASA Task Load Index (TLX)." NASA Human Systems Integration Division.</li>
                         </ul>
                     </section>
 
